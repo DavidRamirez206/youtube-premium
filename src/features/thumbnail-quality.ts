@@ -170,7 +170,7 @@ function enableObserver() {
   }
 }
 
-import { configRead, configAddChangeListener } from './config';
+import { configRead, configAddChangeListener } from '../core/config';
 
 if (configRead('upgradeThumbnails')) enableObserver();
 

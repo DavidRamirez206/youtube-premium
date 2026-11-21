@@ -1,6 +1,6 @@
 /* eslint no-redeclare: 0 */
 /* global fetch:writable */
-import { configRead } from './config';
+import { configRead } from '../core/config';
 
 /**
  * This is a minimal reimplementation of the following uBlock Origin rule:

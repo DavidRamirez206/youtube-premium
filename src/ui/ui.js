@@ -1,13 +1,13 @@
 /*global navigate, __YTAF_VERSION__*/
-import './spatial-navigation-polyfill.js';
+import '../polyfills/spatial-navigation-polyfill.js';
 import {
   configAddChangeListener,
   configRead,
   configWrite,
   configGetDesc
-} from './config.js';
+} from '../core/config.js';
 import './ui.css';
-import { requireElement } from './player_api/helpers';
+import { requireElement } from '../player_api/helpers';
 
 // We handle key events ourselves.
 window.__spatialNavigation__.keyMode = 'NONE';

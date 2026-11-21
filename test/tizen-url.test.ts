@@ -6,7 +6,7 @@ import {
   isAppReloadNavigation,
   localAppBase,
   localAppUrl
-} from '../src/tizen-url';
+} from '../src/loader/tizen-url';
 
 describe('fixYouTubeUrl', () => {
   it.each([

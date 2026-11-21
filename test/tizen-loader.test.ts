@@ -28,7 +28,7 @@ describe('runTizenLoader network patches', () => {
     );
     vi.spyOn(document, 'write').mockImplementation(() => {});
     vi.spyOn(document, 'close').mockImplementation(() => {});
-    const { runTizenLoader } = await import('../src/tizen-loader');
+    const { runTizenLoader } = await import('../src/loader/tizen-loader');
     await runTizenLoader();
   });
 

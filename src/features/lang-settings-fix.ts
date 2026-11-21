@@ -3,7 +3,7 @@
 import {
   ResolveCommandRegistry,
   type ResolveCommandHook
-} from './app_api/index';
+} from '../app_api/index';
 
 function getPrefsCookie() {
   const PREFIX = 'PREF=';

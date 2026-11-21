@@ -1,6 +1,6 @@
 import sha256 from 'tiny-sha256';
-import { configRead } from './config';
-import { showNotification } from './ui';
+import { configRead } from '../core/config';
+import { showNotification } from '../ui/ui';
 
 // Copied from https://github.com/ajayyy/SponsorBlock/blob/9392d16617d2d48abb6125c00e2ff6042cb7bebe/src/config.ts#L179-L233
 const barTypes = {

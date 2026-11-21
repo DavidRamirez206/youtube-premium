@@ -1,7 +1,7 @@
-import { configRead } from './config';
-import { getPlayerManager, PlayerMode } from './player_api';
-import type { EventMapOf, PlayerManager, VideoID } from './player_api';
-import { showNotification } from './ui';
+import { configRead } from '../core/config';
+import { getPlayerManager, PlayerMode } from '../player_api';
+import type { EventMapOf, PlayerManager, VideoID } from '../player_api';
+import { showNotification } from '../ui/ui';
 
 const playerManager = await getPlayerManager();
 

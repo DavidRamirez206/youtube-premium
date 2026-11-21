@@ -1,4 +1,4 @@
-import { configRead, configAddChangeListener } from './config';
+import { configRead, configAddChangeListener } from '../core/config';
 
 class Watch {
   constructor() {

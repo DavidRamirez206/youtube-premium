@@ -1,6 +1,6 @@
 /* eslint no-redeclare: 0 */
 /* global fetch:writable */
-import { configRead } from './config';
+import { configRead } from '../core/config';
 
 const SHELF_SHORTS = 'TVHTML5_SHELF_RENDERER_TYPE_SHORTS';
 

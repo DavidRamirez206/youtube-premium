@@ -4,7 +4,7 @@ const CONFIG_KEY = 'ytaf-configuration';
 
 async function loadConfig() {
   vi.resetModules();
-  return import('../src/config.js');
+  return import('../src/core/config.js');
 }
 
 describe('config', () => {

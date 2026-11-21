@@ -1,6 +1,6 @@
-import { configRead } from './config';
+import { configRead } from '../core/config';
 
-import { ResolveCommandRegistry, type ResolveCommandHook } from './app_api';
+import { ResolveCommandRegistry, type ResolveCommandHook } from '../app_api';
 
 const registry = await ResolveCommandRegistry.getInstance();
 

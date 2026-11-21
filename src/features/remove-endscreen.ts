@@ -1,6 +1,6 @@
 import kindOf from 'which-builtin-type';
 
-import { configRead } from './config';
+import { configRead } from '../core/config';
 
 function isObject(value: unknown): value is object {
   // @ts-expect-error - bad types

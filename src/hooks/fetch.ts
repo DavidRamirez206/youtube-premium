@@ -1,4 +1,7 @@
-import { CustomEventTarget, TypedCustomEvent } from '../custom-event-target';
+import {
+  CustomEventTarget,
+  TypedCustomEvent
+} from '../core/custom-event-target';
 
 export interface StringConvertible {
   toString(): string;

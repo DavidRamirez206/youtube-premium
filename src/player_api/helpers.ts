@@ -1,4 +1,4 @@
-import { waitForChildAdd } from '../utils';
+import { waitForChildAdd } from '../core/utils';
 
 import type { YTPlayer } from './yt-api';
 

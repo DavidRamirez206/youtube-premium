@@ -1,4 +1,4 @@
-import { getProxyIP } from './proxy-config';
+import { getProxyIP } from '../loader/proxy-config';
 
 // On-screen debug console for Tizen TV
 class OnScreenConsole {
