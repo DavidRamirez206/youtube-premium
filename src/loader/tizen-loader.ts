@@ -495,7 +495,7 @@ function showNetworkErrorUI() {
   // Clear body and insert error overlay
   document.body.innerHTML = `
     <div id="tizen-network-error" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #0f0f0f; color: #fff; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; box-sizing: border-box; padding: 2rem;">
-      <div style="font-size: 5rem; color: #ff0000; margin-bottom: 1.5rem; animation: pulse 2s infinite ease-in-out;">⚠️</div>
+      <div style="width: 6rem; height: 6rem; line-height: 6rem; border-radius: 50%; border: 0.4rem solid #ff4e45; color: #ff4e45; font-size: 4rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem; animation: pulse 2s infinite ease-in-out;">!</div>
       <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem; font-weight: 600; text-align: center;">Network Connection Error</h1>
       <p style="font-size: 1.1rem; color: #aaa; margin-bottom: 2.5rem; text-align: center; max-width: 500px; line-height: 1.5;">Unable to load YouTube. Please verify that your TV is connected to the internet and check your network settings.</p>
       <button id="retry-btn" style="background-color: #ff0000; color: #fff; border: none; padding: 1rem 3rem; font-size: 1.2rem; font-weight: bold; border-radius: 50px; cursor: pointer; outline: none; box-shadow: 0 4px 20px rgba(255, 0, 0, 0.4); transform: scale(1); transition: all 0.2s ease;">Retry Connection</button>
