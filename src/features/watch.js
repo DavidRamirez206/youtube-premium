@@ -1,5 +1,10 @@
 import { configRead, configAddChangeListener } from '../core/config';
 
+/** The clock sits left of the YouTube logo unless the logo is hidden. */
+function clockRight() {
+  return configRead('hideLogo') ? '76px' : '360px';
+}
+
 class Watch {
   constructor() {
     this._watch = null;
@@ -19,12 +24,10 @@ class Watch {
       this._watch = document.createElement('div');
       this._watch.id = 'ytaf-clock-widget';
 
-      const hideLogo = configRead('hideLogo');
-
       this._watch.style.cssText = `
         position: fixed;
         top: 76px;
-        right: ${hideLogo ? '76px' : '360px'};
+        right: ${clockRight()};
         width: 120px;
         height: 50px;
         line-height: 50px;
@@ -139,4 +142,10 @@ toggleWatch(configRead('showWatch'));
 
 configAddChangeListener('showWatch', (evt) => {
   toggleWatch(evt.detail.newValue);
+});
+
+configAddChangeListener('hideLogo', () => {
+  if (watchInstance?._watch) {
+    watchInstance._watch.style.right = clockRight();
+  }
 });
