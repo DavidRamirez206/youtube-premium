@@ -30,9 +30,14 @@ By installing or using ClearTube TV you accept these terms.
    - [SponsorBlock](https://sponsor.ajay.app/), through the
      `sponsorblock.inf.re` API mirror: the first characters of a hash of the
      video ID.
-   - [DeArrow](https://dearrow.ajay.app/) (when enabled): the video ID.
-7. **Third-party data.** SponsorBlock and DeArrow data are provided by their
-   own projects under their own licenses and terms. ClearTube TV only
-   displays them.
+   - [DeArrow](https://dearrow.ajay.app/) (`sponsor.ajay.app` and
+     `dearrow-thumb.ajay.app`, when enabled): the first characters of a
+     hash of each listed video ID, and the ID of each video whose
+     community thumbnail is displayed.
+7. **Third-party data.** ClearTube TV uses SponsorBlock and DeArrow data
+   from https://sponsor.ajay.app/, licensed under
+   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+   That data is provided by its own project under its own terms and may not
+   be used commercially; ClearTube TV only displays it.
 8. **Changes.** These terms may change with new releases. The version in
    the release you use applies.

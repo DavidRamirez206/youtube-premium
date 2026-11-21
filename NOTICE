@@ -22,6 +22,9 @@ ClearTube TV is a modified version of youtube-tizenos, which is itself a
 modified version of youtube-webos. The full list of authors is available in
 the Git history.
 
+Uses SponsorBlock and DeArrow data from https://sponsor.ajay.app/, licensed
+under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
 "YouTube" is a trademark of Google LLC. "Samsung" and "Tizen" are
 trademarks of Samsung Electronics Co., Ltd. and the Linux Foundation
 respectively. "LG" and "webOS" are trademarks of LG Electronics Inc. This

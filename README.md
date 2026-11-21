@@ -6,7 +6,7 @@
 
 <p align="center">
   An unofficial, open-source client for YouTube on Samsung Tizen and LG webOS
-  televisions, with ad blocking, SponsorBlock and additional playback options.
+  televisions, with ad blocking, SponsorBlock, DeArrow and additional playback options.
 </p>
 
 <p align="center">
@@ -54,12 +54,15 @@ usual. No video content is hosted, copied or redistributed by this project.
 | Maximum video quality                     | Selects the highest resolution available for each video.                                           |
 | High-quality thumbnails                   | Replaces low-resolution thumbnails with higher-quality versions.                                   |
 | End screen removal                        | Hides the end-of-video cards that cover the last seconds.                                          |
-| Shorts filter                             | Removes Shorts from the subscriptions feed (optional).                                             |
+| [DeArrow](https://dearrow.ajay.app/)      | Replaces clickbait titles and thumbnails with community-submitted ones (optional).                 |
+| Playback speed                            | Starts every video at a chosen speed, from 0.75x to 2x.                                            |
+| Hide Shorts                               | Removes Shorts from home, subscriptions, search and the side menu (optional).                      |
+| Disable previews                          | Stops videos from playing automatically when a tile is focused (optional).                         |
 | Audio-only mode                           | Hides the picture and keeps the audio playing (Blue button).                                       |
 | On-screen clock                           | Shows the current time over the interface (optional).                                              |
 | Logo removal                              | Hides the YouTube logo from the interface (optional).                                              |
 | Account selector bypass                   | Skips the "Who's watching?" screen on start-up (optional).                                         |
-| Settings menu                             | Every option can be changed from the remote with the Green button.                                 |
+| Settings menu                             | Every option, grouped by section, can be changed from the remote with the Green button.            |
 
 ## Compatibility
 
@@ -153,35 +156,44 @@ previous version.
 | ---------- | --------------------------------------------------------------- |
 | Green      | Open or close the ClearTube TV settings menu.                   |
 | Up / Down  | Move through the settings menu.                                 |
-| OK         | Toggle the selected option.                                     |
+| OK         | Toggle the selected option or cycle through its values.         |
+| Left/Right | Change the value of options such as playback speed.             |
 | Back       | Close the settings menu.                                        |
 | Blue       | Toggle audio-only mode while a video is playing.                |
 | Red        | Show or hide the on-screen debug console.                       |
 | Yellow     | Show or hide the interface element inspector (for development). |
 
-Some options require the application to reload; the menu applies them when
-it is closed.
-
 ## Settings
 
-| Option                                  | Default |
-| --------------------------------------- | ------- |
-| Enable ad blocking                      | On      |
-| Enable SponsorBlock                     | On      |
-| Skip sponsor segments                   | On      |
-| Skip interaction reminders              | On      |
-| Skip self-promotion                     | On      |
-| Skip intros                             | Off     |
-| Skip outros                             | Off     |
-| Skip non-music sections in music videos | Off     |
-| Skip recaps and previews                | Off     |
-| Upgrade thumbnail quality               | On      |
-| Force maximum video quality             | On      |
-| Remove end screens                      | On      |
-| Remove Shorts from subscriptions        | Off     |
-| Hide the YouTube logo                   | Off     |
-| Show clock                              | Off     |
-| Bypass account selection                | Off     |
+The menu groups the options in four sections. Options marked with an
+asterisk are applied immediately; the others are applied when the menu
+closes, which reloads the application.
+
+| Section          | Option                               | Default |
+| ---------------- | ------------------------------------ | ------- |
+| Ads and sponsors | Block ads                            | On      |
+|                  | SponsorBlock                         | On      |
+|                  | Skip sponsor segments                | On      |
+|                  | Skip interaction reminders           | On      |
+|                  | Skip self-promotion                  | On      |
+|                  | Skip intros                          | Off     |
+|                  | Skip outros and credits              | Off     |
+|                  | Skip non-music parts of music videos | Off     |
+|                  | Skip recaps and previews             | Off     |
+| Playback         | Maximum video quality                | On      |
+|                  | Default playback speed \*            | 1x      |
+|                  | Remove end screens                   | On      |
+|                  | Disable autoplay previews            | Off     |
+| Content          | Hide Shorts                          | Off     |
+|                  | DeArrow                              | Off     |
+|                  | Use DeArrow thumbnails               | On      |
+|                  | High-quality thumbnails \*           | On      |
+| Interface        | Hide the YouTube logo \*             | Off     |
+|                  | Show clock \*                        | Off     |
+|                  | Skip account selection               | Off     |
+
+The SponsorBlock categories only apply while SponsorBlock is on, and the
+DeArrow thumbnails option only while DeArrow is on.
 
 Settings are stored on the television only.
 
@@ -206,10 +218,12 @@ Tizen 6.0 and later do not need it.
 ClearTube TV contains no analytics and does not collect personal data.
 Besides YouTube, the application only contacts the services you enable:
 
-| Service                                     | Data sent                                  | When                       |
-| ------------------------------------------- | ------------------------------------------ | -------------------------- |
-| SponsorBlock (`sponsorblock.inf.re` mirror) | First characters of a hash of the video ID | SponsorBlock enabled       |
-| Local proxy                                 | YouTube API requests                       | Tizen 5.5 and earlier only |
+| Service                                       | Data sent                                   | When                       |
+| --------------------------------------------- | ------------------------------------------- | -------------------------- |
+| SponsorBlock (`sponsorblock.inf.re` mirror)   | First characters of a hash of the video ID  | SponsorBlock enabled       |
+| DeArrow (`sponsor.ajay.app`)                  | First characters of a hash of each video ID | DeArrow enabled            |
+| DeArrow thumbnails (`dearrow-thumb.ajay.app`) | ID of each video with a community thumbnail | DeArrow thumbnails enabled |
+| Local proxy                                   | YouTube API requests                        | Tizen 5.5 and earlier only |
 
 See [DISCLAIMER.md](DISCLAIMER.md) for details.
 
@@ -281,7 +295,10 @@ available in the Git history.
 
 Third-party services and projects:
 
-- [SponsorBlock](https://sponsor.ajay.app/) by Ajay Ramachandran and contributors.
+- [SponsorBlock](https://sponsor.ajay.app/) and [DeArrow](https://dearrow.ajay.app/)
+  by Ajay Ramachandran and contributors. Uses SponsorBlock and DeArrow data
+  from https://sponsor.ajay.app/, licensed under
+  [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 - Ad filtering rules based on [uBlock Origin](https://github.com/gorhill/uBlock) filters.
 
 ## License
