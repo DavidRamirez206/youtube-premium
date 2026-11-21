@@ -72,3 +72,28 @@ export function isAppReloadNavigation(url: URL): boolean {
     /^\/(?:index\.html|tv\/?)?$/.test(url.pathname)
   );
 }
+
+export type AppNavigation =
+  | { action: 'ignore' }
+  | { action: 'hash'; hash: string }
+  | { action: 'reload'; url: string };
+
+/**
+ * Decides what to do with a navigation YouTube starts while running from
+ * file://. Because of the <base> tag, YouTube's own reloads (for example
+ * `index.html?is_account_switch=1` after signing in) and hash-only
+ * navigations resolve to youtube.com, which would leave the app on a 404.
+ */
+export function resolveAppNavigation(
+  destination: URL,
+  localUrl: string
+): AppNavigation {
+  if (!isAppReloadNavigation(destination)) return { action: 'ignore' };
+  if (!destination.search && destination.hash) {
+    return { action: 'hash', hash: destination.hash };
+  }
+  return {
+    action: 'reload',
+    url: localAppUrl(localUrl) + destination.search + (destination.hash || '#/')
+  };
+}

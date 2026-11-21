@@ -54,5 +54,6 @@ import './features/video-quality';
 import './features/lang-settings-fix';
 import './features/remove-endscreen';
 import './hooks';
+import './hooks/app-navigation';
 import './features/block-webos-cast';
 import './features/auto-account-select';
