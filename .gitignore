@@ -1,14 +1,35 @@
 # Dependencies
 /node_modules/
 
-# Build output
+# Build and test output
 /dist/
 /coverage/
 *.ipk
 *.wgt
 *.manifest.json
+*.tsbuildinfo
 
-# OS / editor
+# Signing material: never commit certificates or keys
+*.p12
+*.pfx
+*.pem
+*.key
+author.crt
+distributor.crt
+.tizen-certs/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor (shared editor settings live in .vscode/ and are tracked)
 .DS_Store
-/.vscode/
+Thumbs.db
 /.idea/
+*.swp
