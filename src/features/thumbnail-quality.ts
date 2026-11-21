@@ -116,41 +116,65 @@ async function upgradeBgImg(element: HTMLElement) {
   lazyLoader.src = target.href;
 }
 
-const obs = new MutationObserver((mutations) => {
-  const YT_THUMBNAIL_ELEMENT_TAG = 'ytlr-thumbnail-details';
+const YT_THUMBNAIL_TAG = 'YTLR-THUMBNAIL-DETAILS';
 
-  const dummy = document.createElement('div');
+function isWatchPage() {
+  return (
+    window.location.hash.includes('/watch') ||
+    !!document.body?.classList.contains('WEB_PAGE_TYPE_WATCH')
+  );
+}
 
-  // handle backgroundImage change
-  // YT re-uses thumbnail elements in its virtual list implementation.
-  mutations
-    .filter((mut) => mut.type === 'attributes')
-    .map((mut) => [mut.target, mut] as const)
-    .filter((value): value is [HTMLElement, MutationRecord] => {
-      const [node, { oldValue }] = value;
-      dummy.style.cssText = oldValue ?? '';
+let cssParser: HTMLElement | null = null;
 
-      return (
+function backgroundOf(cssText: string | null) {
+  if (!cssText || !cssText.includes('url(')) return '';
+  cssParser ??= document.createElement('div');
+  cssParser.style.cssText = cssText;
+  return cssParser.style.backgroundImage;
+}
+
+/**
+ * Upgrades thumbnails that were added or whose image changed (YouTube
+ * reuses thumbnail elements in its virtual lists). Runs for every style
+ * change on the page, so cheap checks come first: nothing is done on the
+ * watch page, where the progress bar changes its style many times per
+ * second, or for elements that are not thumbnails.
+ */
+export function handleMutations(mutations: MutationRecord[]) {
+  if (isWatchPage()) return;
+
+  for (const mut of mutations) {
+    if (mut.type === 'attributes') {
+      const node = mut.target;
+      if (
         node instanceof HTMLElement &&
-        node.matches(YT_THUMBNAIL_ELEMENT_TAG) &&
+        node.tagName === YT_THUMBNAIL_TAG &&
         node.style.backgroundImage !== '' &&
-        node.style.backgroundImage !== dummy.style.backgroundImage
-      );
-    })
-    .map(([elem]) => elem)
-    .forEach(upgradeBgImg);
+        node.style.backgroundImage !== backgroundOf(mut.oldValue)
+      ) {
+        void upgradeBgImg(node);
+      }
+    } else if (mut.type === 'childList') {
+      for (const added of Array.from(mut.addedNodes)) {
+        if (!(added instanceof HTMLElement)) continue;
+        const thumbs =
+          added.tagName === YT_THUMBNAIL_TAG
+            ? [added]
+            : Array.from(
+                added.getElementsByTagName(YT_THUMBNAIL_TAG.toLowerCase())
+              );
+        for (const elem of thumbs) {
+          if (elem instanceof HTMLElement && elem.style.backgroundImage) {
+            void upgradeBgImg(elem);
+          }
+        }
+      }
+    }
+  }
+}
 
-  // handle element add
-  mutations
-    .filter((mut) => mut.type === 'childList')
-    .flatMap((mut) => Array.from(mut.addedNodes))
-    .filter((node) => node instanceof HTMLElement)
-    .flatMap((elem) =>
-      Array.from(elem.querySelectorAll<HTMLElement>(YT_THUMBNAIL_ELEMENT_TAG))
-    )
-    .filter((elem) => elem.style.backgroundImage !== '')
-    .forEach(upgradeBgImg);
-});
+const obs = new MutationObserver(handleMutations);
 
 function enableObserver() {
   const startObs = () => {
