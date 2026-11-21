@@ -71,7 +71,7 @@ export function renderNotes(commits, opts = {}) {
   }
 
   const out = [];
-  if (breaking.length) out.push('### ⚠️ Breaking changes', '', ...breaking, '');
+  if (breaking.length) out.push('### Breaking changes', '', ...breaking, '');
   for (const title of new Set(SECTIONS.map(([, t]) => t))) {
     const lines = groups.get(title);
     if (lines?.length) out.push(`### ${title}`, '', ...lines, '');
