@@ -6,12 +6,14 @@
 *.json text
 *.md text
 *.mjs text
+*.cjs text
+*.ts text
+*.yaml text
 *.svg text
 *.yml text
 
 .browserslistrc text
 .editorconfig text
-.eslintignore text
 .gitattributes text
 .gitignore text
 .prettierignore text
