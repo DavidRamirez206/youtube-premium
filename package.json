@@ -26,10 +26,10 @@
     "lint:prettier": "prettier --check .",
     "lint:all": "pnpm run \"/^lint:(?!all)/\""
   },
-  "repository": "github:DavidRamirez206/youtube-tizenos",
+  "repository": "github:DavidRamirez206/ClearTube-TV",
   "license": "GPL-3.0-only",
-  "bugs": "https://github.com/DavidRamirez206/youtube-tizenos/issues",
-  "homepage": "https://github.com/DavidRamirez206/youtube-tizenos#readme",
+  "bugs": "https://github.com/DavidRamirez206/ClearTube-TV/issues",
+  "homepage": "https://github.com/DavidRamirez206/ClearTube-TV#readme",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.29.2",
     "core-js-pure": "^3.49.0",
