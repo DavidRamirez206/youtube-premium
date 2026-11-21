@@ -229,8 +229,9 @@ export async function runTizenLoader() {
   const needsProxy = /Tizen [345]\./.test(navigator.userAgent);
   const rewriteUrl = (raw: string): string => {
     const url = fixYouTubeUrl(raw);
-    if (needsProxy && url.includes('/youtubei/')) {
-      return `http://${getProxyIP()}:3000/proxy?url=${encodeURIComponent(url)}`;
+    const proxyIP = needsProxy ? getProxyIP() : null;
+    if (proxyIP && url.includes('/youtubei/')) {
+      return `http://${proxyIP}:3000/proxy?url=${encodeURIComponent(url)}`;
     }
     return url;
   };
@@ -279,7 +280,8 @@ export async function runTizenLoader() {
     });
     this.addEventListener('error', () => {
       logToDebug(`[XHR-ERROR] ${urlStr}`);
-      if (needsProxy && urlStr.includes(getProxyIP())) {
+      const proxyIP = getProxyIP();
+      if (needsProxy && (!proxyIP || urlStr.includes(proxyIP))) {
         showProxyError();
       }
     });

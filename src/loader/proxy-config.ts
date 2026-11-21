@@ -7,13 +7,10 @@ const STORAGE_KEY = 'ytaf_proxy_ip';
 const SCAN_TIMEOUT_MS = 2000;
 const BATCH_SIZE = 25;
 
-// Fallback IP used if auto-discovery fails entirely
-const FALLBACK_IP = '192.168.1.165';
+// Resolved proxy IP, set by discoverProxyIP(). null when no proxy was found.
+let resolvedProxyIP: string | null = null;
 
-// Resolved proxy IP — set by discoverProxyIP() before any network patches run
-let resolvedProxyIP: string = FALLBACK_IP;
-
-export function getProxyIP(): string {
+export function getProxyIP(): string | null {
   return resolvedProxyIP;
 }
 
@@ -131,9 +128,9 @@ function buildSubnetIPs(deviceIP: string): string[] {
  *   1. Check localStorage for a cached IP and verify it still responds.
  *   2. If not cached or stale, scan the local subnet.
  *   3. Cache the result for next time.
- *   4. Fall back to the hardcoded FALLBACK_IP if nothing found.
+ *   4. Resolve to null if nothing is found.
  */
-export async function discoverProxyIP(): Promise<string> {
+export async function discoverProxyIP(): Promise<string | null> {
   // Check cached IP first
   const cached = localStorage.getItem(STORAGE_KEY);
   if (cached) {
@@ -163,19 +160,9 @@ export async function discoverProxyIP(): Promise<string> {
       return found;
     }
   } else {
-    console.warn('[Proxy] Could not determine device IP, trying fallback...');
+    console.warn('[Proxy] Could not determine device IP.');
   }
 
-  // Last resort: try the hardcoded fallback
-  try {
-    await pingHost(FALLBACK_IP);
-    resolvedProxyIP = FALLBACK_IP;
-    localStorage.setItem(STORAGE_KEY, FALLBACK_IP);
-    console.info(`[Proxy] Fallback proxy at ${FALLBACK_IP}`);
-    return FALLBACK_IP;
-  } catch (e) {
-    resolvedProxyIP = FALLBACK_IP;
-    console.error('[Proxy] No proxy found on subnet or fallback');
-    return FALLBACK_IP;
-  }
+  console.error('[Proxy] No proxy found on the local subnet');
+  return null;
 }

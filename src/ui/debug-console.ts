@@ -105,11 +105,17 @@ class OnScreenConsole {
     const time = new Date().toLocaleTimeString();
     line.textContent = `[${time}] ${text}`;
 
-    // Remote log via image beacon
-    try {
-      const img = new Image();
-      img.src = `http://${getProxyIP()}:3000/?log=${encodeURIComponent(`[${time}] ${text}`)}`;
-    } catch (e) {}
+    // Remote log via image beacon, only in debug mode and only to a proxy
+    // that was discovered on the local network.
+    const proxyIP = getProxyIP();
+    if (window.__ytaf_debug__ && proxyIP) {
+      try {
+        const img = new Image();
+        img.src = `http://${proxyIP}:3000/?log=${encodeURIComponent(`[${time}] ${text}`)}`;
+      } catch {
+        // Logging must never break the app.
+      }
+    }
 
     // Insert at the top
     if (this.container.firstChild) {
