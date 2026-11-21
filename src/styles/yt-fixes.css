@@ -7,8 +7,13 @@
   width: 100% !important;
 }
 
+/*
+ * Only the shadow of the watch page itself. A bare [idomkey='shadow']
+ * selector also matched the shadows of titles and of the seek preview,
+ * painting dark boxes behind text and over the preview frames.
+ */
 .ytLrWatchDefaultShadow,
-[idomkey='shadow'] {
+ytlr-watch-default > [idomkey='shadow'] {
   background-image: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0) 0,
