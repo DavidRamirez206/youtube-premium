@@ -164,4 +164,36 @@ describe('config', () => {
       expect(configRead('enableAdBlock')).toBe(true);
     });
   });
+
+  describe('reset and storage failures', () => {
+    it('restores defaults and notifies only changed options', async () => {
+      const config = await loadConfig();
+      config.configWrite('enableAdBlock', false);
+      config.configWrite('hideLogo', true);
+      const listener = vi.fn();
+      config.configAddChangeListener('enableAdBlock', listener);
+      const untouched = vi.fn();
+      config.configAddChangeListener('showWatch', untouched);
+
+      expect(config.configReset().sort()).toEqual([
+        'enableAdBlock',
+        'hideLogo'
+      ]);
+      expect(config.configRead('enableAdBlock')).toBe(true);
+      expect(config.configRead('hideLogo')).toBe(false);
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(untouched).not.toHaveBeenCalled();
+      expect(JSON.parse(window.localStorage.getItem(CONFIG_KEY)!)).toEqual({});
+    });
+
+    it('keeps working when storage cannot be written', async () => {
+      const config = await loadConfig();
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new DOMException('full', 'QuotaExceededError');
+      });
+      vi.spyOn(console, 'warn').mockImplementation(() => {});
+      expect(() => config.configWrite('hideLogo', true)).not.toThrow();
+      expect(config.configRead('hideLogo')).toBe(true);
+    });
+  });
 });

@@ -376,11 +376,51 @@ export function configWrite(key, value) {
 
   console.info('Changing key', key, 'from', oldValue, 'to', value);
   localConfig[key] = value;
-  window.localStorage.setItem(CONFIG_KEY, JSON.stringify(localConfig));
+  persist();
+  notifyChange(key, oldValue, value);
+}
 
+/**
+ * Restores every option to its default value.
+ * @returns {string[]} keys whose value changed
+ */
+export function configReset() {
+  const previous = Object.fromEntries(
+    configKeys().map((key) => [key, configRead(key)])
+  );
+  for (const key of Object.keys(localConfig)) delete localConfig[key];
+  persist();
+
+  const changed = configKeys().filter(
+    (key) => previous[key] !== configRead(key)
+  );
+  for (const key of changed) {
+    notifyChange(key, previous[key], configRead(key));
+  }
+  return changed;
+}
+
+/**
+ * Saves the explicit choices. Storage can be full or unavailable; the
+ * change then stays in memory for this session instead of failing.
+ */
+function persist() {
+  try {
+    window.localStorage.setItem(CONFIG_KEY, JSON.stringify(localConfig));
+  } catch (err) {
+    console.warn('Could not save settings; keeping them until restart.', err);
+  }
+}
+
+/**
+ * @param {string} key
+ * @param {unknown} oldValue
+ * @param {unknown} newValue
+ */
+function notifyChange(key, oldValue, newValue) {
   configFrags[key].dispatchEvent(
     new CustomEvent('ytafConfigChange', {
-      detail: { key, newValue: value, oldValue }
+      detail: { key, newValue, oldValue }
     })
   );
 }
