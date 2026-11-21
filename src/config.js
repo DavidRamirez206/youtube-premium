@@ -101,19 +101,28 @@ function loadStoredConfig() {
 
   if (storage === null) {
     console.info('Config not set; using defaults.');
-    return null;
+    return {};
   }
 
   try {
-    return JSON.parse(storage);
+    const parsed = JSON.parse(storage);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    console.warn('Stored config is not an object; using defaults.');
   } catch (err) {
     console.warn('Error parsing stored config:', err);
-    return null;
   }
+  return {};
 }
 
-// Use defaultConfig as a prototype so writes to localConfig don't change it.
-let localConfig = loadStoredConfig() ?? Object.create(defaultConfig);
+/**
+ * Only values the user explicitly changed are kept here (and in storage).
+ * Everything else falls back to `defaultConfig`, so changing a default in a
+ * new release reaches users who never touched that option.
+ * @type {Record<string, unknown>}
+ */
+const localConfig = loadStoredConfig();
 
 function configExists(key) {
   return configOptions.has(key);
@@ -132,18 +141,9 @@ export function configRead(key) {
     throw new Error('tried to read unknown config key: ' + key);
   }
 
-  if (localConfig[key] === undefined) {
-    console.warn(
-      'Populating key',
-      key,
-      'with default value',
-      defaultConfig[key]
-    );
-
-    localConfig[key] = defaultConfig[key];
-  }
-
-  return localConfig[key];
+  return Object.hasOwn(localConfig, key)
+    ? localConfig[key]
+    : defaultConfig[key];
 }
 
 export function configWrite(key, value) {
@@ -151,12 +151,11 @@ export function configWrite(key, value) {
     throw new Error('tried to write unknown config key: ' + key);
   }
 
-  const oldValue =
-    localConfig[key] !== undefined ? localConfig[key] : defaultConfig[key];
+  const oldValue = configRead(key);
 
   console.info('Changing key', key, 'from', oldValue, 'to', value);
   localConfig[key] = value;
-  window.localStorage[CONFIG_KEY] = JSON.stringify(localConfig);
+  window.localStorage.setItem(CONFIG_KEY, JSON.stringify(localConfig));
 
   configFrags[key].dispatchEvent(
     new CustomEvent('ytafConfigChange', {

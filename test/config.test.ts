@@ -60,4 +60,19 @@ describe('config', () => {
     configWrite('hideLogo', false);
     expect(listener).toHaveBeenCalledOnce();
   });
+
+  it('does not persist defaults that were only read', async () => {
+    const { configRead, configWrite } = await loadConfig();
+    configRead('removeEndscreen');
+    configRead('forceHighResVideo');
+    configWrite('enableAdBlock', false);
+    const stored = JSON.parse(window.localStorage.getItem(CONFIG_KEY)!);
+    expect(stored).toEqual({ enableAdBlock: false });
+  });
+
+  it('ignores stored values that are not an object', async () => {
+    window.localStorage.setItem(CONFIG_KEY, '[1,2]');
+    const { configRead } = await loadConfig();
+    expect(configRead('enableAdBlock')).toBe(true);
+  });
 });
