@@ -3,21 +3,34 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 async function setup() {
   vi.resetModules();
   const config = await import('../src/core/config.js');
-  const { createSettingsMenu } = await import('../src/ui/settings-menu.js');
-  const menu = createSettingsMenu();
+  const { createSettingsMenu, APPLY_ACTION, RESET_ACTION } =
+    await import('../src/ui/settings-menu.js');
+  const notify = vi.fn();
+  const menu = createSettingsMenu({ notify });
   document.body.replaceChildren(menu.element);
-  menu.open();
-  return { menu, config };
+  const closed = vi.fn();
+  menu.open(closed);
+  const goTo = (key: string) => {
+    for (let i = 0; i < 60 && menu.selectedKey !== key; i++) {
+      menu.handleKey('down');
+    }
+    expect(menu.selectedKey).toBe(key);
+  };
+  return { menu, config, notify, closed, goTo, APPLY_ACTION, RESET_ACTION };
 }
 
-const rowLabels = () =>
-  [...document.querySelectorAll('.ctv-menu-row-label')].map(
-    (n) => n.textContent
-  );
+const row = (key: string) =>
+  document.querySelector(`[data-key="${key}"]`) as HTMLElement;
+const valueText = (key: string) =>
+  row(key).querySelector('[data-role="value"]')!.textContent;
+const hintText = (key: string) =>
+  row(key).querySelector('[data-role="hint"]')!.textContent;
 
 describe('settings menu', () => {
   beforeEach(() => {
+    window.localStorage.clear();
     vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
   });
 
   it('groups options under section headings in order', async () => {
@@ -30,141 +43,166 @@ describe('settings menu', () => {
       'Playback',
       'Content',
       'Interface',
+      'Actions',
       'About'
     ]);
-    expect(rowLabels()[0]).toBe('Block ads');
   });
 
-  it('shows the current value of each switch', async () => {
-    await setup();
-    const row = document.querySelector('[data-key="enableAdBlock"]')!;
-    expect(row.querySelector('[data-role="value"]')!.textContent).toBe('ON');
-    const intro = document.querySelector(
-      '[data-key="enableSponsorBlockIntro"]'
-    )!;
-    expect(intro.querySelector('[data-role="value"]')!.textContent).toBe('OFF');
-  });
+  it('stages changes until they are applied', async () => {
+    const { menu, config, notify, goTo, APPLY_ACTION } = await setup();
+    menu.handleKey('ok');
+    expect(config.configRead('enableAdBlock')).toBe(true);
+    expect(valueText('enableAdBlock')).toBe('OFF');
+    expect(row('enableAdBlock').classList).toContain('ctv-modified');
+    expect(menu.unsavedChanges).toBe(1);
+    expect(document.querySelector('.ctv-menu-pending')!.textContent).toBe(
+      '1 unsaved change'
+    );
 
-  it('toggles the selected option and asks for a reload on close', async () => {
-    const { menu, config } = await setup();
-    menu.activate();
+    goTo(APPLY_ACTION);
+    menu.handleKey('ok');
     expect(config.configRead('enableAdBlock')).toBe(false);
-    expect(menu.close()).toBe(true);
+    expect(menu.unsavedChanges).toBe(0);
+    expect(notify).toHaveBeenCalledWith('Settings applied');
+    expect(menu.isOpen()).toBe(true);
   });
 
-  it('does not ask for a reload for live options', async () => {
-    const { menu, config } = await setup();
-    while (menu.selectedKey !== 'hideLogo') menu.down();
-    menu.activate();
-    expect(config.configRead('hideLogo')).toBe(true);
-    expect(menu.close()).toBe(false);
+  it('forgets a change that is undone before applying', async () => {
+    const { menu } = await setup();
+    menu.handleKey('ok');
+    menu.handleKey('ok');
+    expect(menu.unsavedChanges).toBe(0);
+  });
+
+  it('closes directly when nothing changed', async () => {
+    const { menu, closed } = await setup();
+    menu.handleKey('back');
+    expect(menu.isOpen()).toBe(false);
+    expect(closed).toHaveBeenCalled();
+  });
+
+  describe('unsaved changes bar', () => {
+    it('applies and closes', async () => {
+      const { menu, config } = await setup();
+      menu.handleKey('ok');
+      menu.handleKey('back');
+      expect(menu.dialogOpen).toBe(true);
+      expect(menu.isOpen()).toBe(true);
+      menu.handleKey('ok');
+      expect(menu.isOpen()).toBe(false);
+      expect(config.configRead('enableAdBlock')).toBe(false);
+    });
+
+    it('discards and closes', async () => {
+      const { menu, config, notify } = await setup();
+      menu.handleKey('ok');
+      menu.handleKey('back');
+      menu.handleKey('right');
+      menu.handleKey('ok');
+      expect(menu.isOpen()).toBe(false);
+      expect(config.configRead('enableAdBlock')).toBe(true);
+      expect(notify).toHaveBeenCalledWith('Changes discarded');
+    });
+
+    it('keeps editing with the third button or Back', async () => {
+      const { menu } = await setup();
+      menu.handleKey('ok');
+      menu.handleKey('back');
+      menu.handleKey('right');
+      menu.handleKey('right');
+      menu.handleKey('right');
+      menu.handleKey('ok');
+      expect(menu.dialogOpen).toBe(false);
+      expect(menu.isOpen()).toBe(true);
+      expect(menu.unsavedChanges).toBe(1);
+
+      menu.handleKey('back');
+      menu.handleKey('back');
+      expect(menu.dialogOpen).toBe(false);
+      expect(menu.isOpen()).toBe(true);
+    });
+
+    it('ignores navigation keys while the bar is shown', async () => {
+      const { menu } = await setup();
+      menu.handleKey('ok');
+      menu.handleKey('back');
+      menu.handleKey('down');
+      expect(menu.selectedKey).toBe('enableAdBlock');
+    });
+  });
+
+  it('shows dependent options as off while their parent is off', async () => {
+    const { menu, goTo } = await setup();
+    expect(valueText('enableDeArrowThumbnails')).toBe('OFF');
+    expect(row('enableDeArrowThumbnails').classList).toContain('ctv-disabled');
+    expect(hintText('enableDeArrowThumbnails')).toBe('Turn on "DeArrow" first');
+
+    goTo('enableDeArrow');
+    menu.handleKey('ok');
+    expect(valueText('enableDeArrowThumbnails')).toBe('ON');
+    expect(row('enableDeArrowThumbnails').classList).not.toContain(
+      'ctv-disabled'
+    );
+    menu.handleKey('down');
+    expect(menu.selectedKey).toBe('enableDeArrowThumbnails');
+    menu.handleKey('ok');
+    expect(valueText('enableDeArrowThumbnails')).toBe('OFF');
   });
 
   it('skips SponsorBlock categories while SponsorBlock is off', async () => {
     const { menu } = await setup();
-    menu.down(); // SponsorBlock
+    menu.handleKey('down');
     expect(menu.selectedKey).toBe('enableSponsorBlock');
-    menu.activate(); // turn it off
-    menu.down();
+    menu.handleKey('ok');
+    menu.handleKey('down');
     expect(menu.selectedKey).toBe('forceHighResVideo');
+  });
+
+  it('changes choice options with LEFT and RIGHT', async () => {
+    const { menu, goTo, config } = await setup();
+    goTo('playbackSpeed');
+    menu.handleKey('right');
+    expect(valueText('playbackSpeed')).toBe('1.1x');
+    for (let i = 0; i < 10; i++) menu.handleKey('right');
+    expect(valueText('playbackSpeed')).toBe('2x');
     expect(
-      document
-        .querySelector('[data-key="enableSponsorBlockSponsor"]')!
-        .classList.contains('ctv-disabled')
-    ).toBe(true);
+      row('playbackSpeed').querySelector('.ctv-menu-choice')!.classList
+    ).toContain('ctv-at-end');
+    expect(config.configRead('playbackSpeed')).toBe(1);
   });
 
-  it('marks pending changes in the header', async () => {
-    const { menu } = await setup();
-    menu.activate();
-    expect(document.getElementById('ytaf-options-panel')!.classList).toContain(
-      'ctv-pending'
+  it('switches to Spanish as soon as the language is applied', async () => {
+    const { menu, goTo, APPLY_ACTION } = await setup();
+    goTo('language');
+    menu.handleKey('right'); // English
+    menu.handleKey('right'); // Español
+    expect(valueText('language')).toBe('Español');
+    goTo(APPLY_ACTION);
+    menu.handleKey('ok');
+    expect(document.querySelector('.ctv-menu-section')!.textContent).toBe(
+      'Anuncios y patrocinios'
     );
+    expect(row('enableAdBlock').textContent).toContain('Bloquear anuncios');
+    expect(valueText('enableAdBlock')).toBe('SÍ');
   });
 
-  it('does not move past the first or last option', async () => {
-    const { menu } = await setup();
-    menu.up();
-    expect(menu.selectedKey).toBe('enableAdBlock');
-    for (let i = 0; i < 50; i++) menu.down();
-    expect(menu.selectedKey).toBe('action:restoreDefaults');
+  it('stages defaults with Restore defaults', async () => {
+    const { menu, config, goTo, RESET_ACTION } = await setup();
+    config.configWrite('hideLogo', true);
+    goTo(RESET_ACTION);
+    menu.handleKey('ok');
+    expect(config.configRead('hideLogo')).toBe(true);
+    expect(valueText('hideLogo')).toBe('OFF');
+    expect(menu.unsavedChanges).toBe(1);
   });
 
-  it('changes choice options with LEFT and RIGHT without wrapping', async () => {
-    const { menu, config } = await setup();
-    while (menu.selectedKey !== 'playbackSpeed') menu.down();
-    menu.right();
-    expect(config.configRead('playbackSpeed')).toBe(1.1);
-    menu.left();
-    menu.left();
-    menu.left();
-    expect(config.configRead('playbackSpeed')).toBe(0.75);
-    const value = document.querySelector(
-      '[data-key="playbackSpeed"] [data-role="value"]'
-    )!;
-    expect(value.textContent).toBe('0.75x');
-    expect(menu.close()).toBe(false);
-  });
-
-  it('cycles choice options with OK', async () => {
-    const { menu, config } = await setup();
-    while (menu.selectedKey !== 'playbackSpeed') menu.down();
-    for (let i = 0; i < 6; i++) menu.activate();
-    expect(config.configRead('playbackSpeed')).toBe(0.75);
-  });
-
-  it('shows the position of the selected row', async () => {
+  it('shows the position and the license attribution', async () => {
     const { menu } = await setup();
     const position = () =>
       document.querySelector('.ctv-menu-position')!.textContent;
     expect(position()).toMatch(/^1 of \d+$/);
-    menu.down();
+    menu.handleKey('down');
     expect(position()).toMatch(/^2 of /);
-  });
-
-  it('dims the picker arrow at the end of the list', async () => {
-    const { menu, config } = await setup();
-    while (menu.selectedKey !== 'playbackSpeed') menu.down();
-    const picker = document.querySelector(
-      '[data-key="playbackSpeed"] .ctv-menu-choice'
-    )!;
-    expect(picker.classList).not.toContain('ctv-at-end');
-    for (let i = 0; i < 10; i++) menu.right();
-    expect(config.configRead('playbackSpeed')).toBe(2);
-    expect(picker.classList).toContain('ctv-at-end');
-  });
-
-  it('restores defaults only after a second OK', async () => {
-    const { menu, config } = await setup();
-    menu.activate(); // ad blocking off
-    expect(config.configRead('enableAdBlock')).toBe(false);
-    for (let i = 0; i < 50; i++) menu.down();
-    expect(menu.selectedKey).toBe('action:restoreDefaults');
-
-    menu.activate();
-    expect(config.configRead('enableAdBlock')).toBe(false);
-    expect(
-      document.querySelector('[data-key="action:restoreDefaults"]')!.textContent
-    ).toContain('Press OK again');
-
-    menu.activate();
-    expect(config.configRead('enableAdBlock')).toBe(true);
-    expect(menu.close()).toBe(true);
-  });
-
-  it('cancels the restore confirmation when moving away', async () => {
-    const { menu, config } = await setup();
-    menu.activate();
-    for (let i = 0; i < 50; i++) menu.down();
-    menu.activate();
-    menu.up();
-    menu.down();
-    menu.activate();
-    expect(config.configRead('enableAdBlock')).toBe(false);
-  });
-
-  it('shows the data attribution required by the licenses', async () => {
-    await setup();
     expect(document.querySelector('.ctv-menu-about')!.textContent).toContain(
       'CC BY-NC-SA 4.0'
     );
@@ -173,22 +211,16 @@ describe('settings menu', () => {
   it('keeps working when one row is broken', async () => {
     const { menu, config } = await setup();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    document
-      .querySelector('[data-key="hideLogo"] [data-role="value"]')!
-      .remove();
-    expect(() => menu.down()).not.toThrow();
+    row('hideLogo').querySelector('[data-role="value"]')!.remove();
+    expect(() => menu.handleKey('down')).not.toThrow();
     expect(console.error).toHaveBeenCalledWith(
       '[ClearTube] settings row hideLogo:',
       expect.any(String)
     );
-    // Other rows still render and work.
-    menu.up();
-    menu.activate();
-    expect(config.configRead('enableAdBlock')).toBe(false);
-    expect(
-      document.querySelector('[data-key="enableAdBlock"] [data-role="value"]')!
-        .textContent
-    ).toBe('OFF');
+    menu.handleKey('up');
+    menu.handleKey('ok');
+    expect(valueText('enableAdBlock')).toBe('OFF');
+    expect(config.configRead('enableAdBlock')).toBe(true);
   });
 });
 

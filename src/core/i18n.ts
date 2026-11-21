@@ -17,6 +17,10 @@ const en: Dictionary = {
   'menu.requires': 'Turn on "{parent}" first',
   'menu.modified': 'Changed',
 
+  'key.updown': 'UP / DOWN',
+  'key.ok': 'OK',
+  'key.leftright': 'LEFT / RIGHT',
+  'key.close': 'GREEN / BACK',
   'legend.select': 'Select',
   'legend.change': 'Change',
   'legend.adjust': 'Adjust',
@@ -87,6 +91,10 @@ const es: Dictionary = {
   'menu.requires': 'Activa primero "{parent}"',
   'menu.modified': 'Cambiado',
 
+  'key.updown': 'ARRIBA / ABAJO',
+  'key.ok': 'OK',
+  'key.leftright': 'IZQUIERDA / DERECHA',
+  'key.close': 'VERDE / ATRÁS',
   'legend.select': 'Elegir',
   'legend.change': 'Cambiar',
   'legend.adjust': 'Ajustar',

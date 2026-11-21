@@ -1,17 +1,17 @@
 /*global __YTAF_VERSION__*/
-// ClearTube TV settings menu: options grouped by section plus an About
-// section, driven entirely by the remote (see ui.js for the key bindings).
+// ClearTube TV settings menu. Changes are staged in a draft and applied
+// together with "Apply changes"; nothing reloads the app. Leaving with
+// unsaved changes asks whether to apply, discard or keep editing.
 // Design rules: workspace skill "menu-ui".
 
 import {
-  configAddChangeListener,
   configGetOption,
   configKeys,
   configRead,
-  configReset,
   configSections,
   configWrite
 } from '../core/config.js';
+import { onLanguageChange, t } from '../core/i18n';
 import { reportError } from '../core/safe';
 import { computeListOffset } from './menu-scroll.js';
 
@@ -22,13 +22,9 @@ const LOGO_MARK =
 const DESIGN_WIDTH = 1920;
 const DESIGN_HEIGHT = 1080;
 
-const RESET_ACTION = 'action:restoreDefaults';
-
-const ABOUT_TEXT = [
-  'Uses SponsorBlock and DeArrow data from sponsor.ajay.app, licensed under CC BY-NC-SA 4.0.',
-  'Free software under the GPL-3.0. Not affiliated with YouTube or Google.',
-  'github.com/DavidRamirez206/ClearTube-TV'
-];
+export const APPLY_ACTION = 'action:apply';
+export const RESET_ACTION = 'action:restoreDefaults';
+const DIALOG_CHOICES = ['apply', 'discard', 'keep'];
 
 /**
  * @param {string} tag
@@ -42,11 +38,22 @@ function el(tag, className, text) {
   return node;
 }
 
+const isAction = (/** @type {string} */ key) => key.startsWith('action:');
+
 /** @param {string} key */
-function isAvailable(key) {
-  if (key === RESET_ACTION) return true;
-  const { requires } = configGetOption(key);
-  return !requires || Boolean(configRead(requires));
+function optionLabel(key) {
+  return t(`option.${key}.desc`, {}, configGetOption(key).desc);
+}
+
+/** @param {string} key */
+function optionHint(key) {
+  const hint = configGetOption(key).hint;
+  return hint ? t(`option.${key}.hint`, {}, hint) : '';
+}
+
+/** @param {string} key @param {{ value: unknown, label: string }} choice */
+function choiceLabel(key, choice) {
+  return t(`choice.${key}.${String(choice.value)}`, {}, choice.label);
 }
 
 /**
@@ -55,14 +62,14 @@ function isAvailable(key) {
  * @param {string} key
  * @param {number} direction
  * @param {boolean} wrap
+ * @param {unknown} [current] value to start from (defaults to the saved one)
  */
-export function nextValue(key, direction, wrap) {
+export function nextValue(key, direction, wrap, current = configRead(key)) {
   const option = configGetOption(key);
-  const value = configRead(key);
-  if (!option.choices) return !value;
+  if (!option.choices) return !current;
 
   const count = option.choices.length;
-  const index = option.choices.findIndex((c) => c.value === value);
+  const index = option.choices.findIndex((c) => c.value === current);
   let next = (index < 0 ? 0 : index) + direction;
   if (wrap) next = (next + count) % count;
   next = Math.max(0, Math.min(count - 1, next));
@@ -75,7 +82,23 @@ export function menuScale(width, height) {
   return Math.min(1, width / DESIGN_WIDTH, height / DESIGN_HEIGHT);
 }
 
-export function createSettingsMenu() {
+/**
+ * @param {{ notify?: (text: string) => void }} [options]
+ */
+export function createSettingsMenu({ notify = () => {} } = {}) {
+  /** Staged values, applied with "Apply changes". */
+  const draft = new Map();
+
+  /** @param {string} key */
+  const valueOf = (key) => (draft.has(key) ? draft.get(key) : configRead(key));
+
+  /** @param {string} key */
+  function isAvailable(key) {
+    if (isAction(key)) return true;
+    const { requires } = configGetOption(key);
+    return !requires || Boolean(valueOf(requires));
+  }
+
   const overlay = el('div', 'ctv-menu-overlay');
   overlay.id = 'ytaf-options-overlay';
   overlay.style.display = 'none';
@@ -89,15 +112,10 @@ export function createSettingsMenu() {
   const logo = el('div', 'ctv-menu-logo');
   logo.innerHTML = LOGO_MARK; // static, local markup
   const titles = el('div', 'ctv-menu-titles');
-  titles.appendChild(el('div', 'ctv-menu-title', 'ClearTube TV'));
-  titles.appendChild(
-    el('div', 'ctv-menu-version', `Settings  -  version ${__YTAF_VERSION__}`)
-  );
-  const pending = el(
-    'div',
-    'ctv-menu-pending',
-    'Changes apply when you close the menu'
-  );
+  const title = el('div', 'ctv-menu-title');
+  const subtitle = el('div', 'ctv-menu-version');
+  titles.append(title, subtitle);
+  const pending = el('div', 'ctv-menu-pending');
   header.append(logo, titles, pending);
 
   // Body
@@ -107,136 +125,199 @@ export function createSettingsMenu() {
 
   /** @type {HTMLElement[]} */
   const rows = [];
+  /** @type {[HTMLElement, string][]} */
+  const headings = [];
 
-  /**
-   * @param {string} key
-   * @param {string} label
-   * @param {string | undefined} hint
-   * @param {boolean} first
-   */
-  function addRow(key, label, hint, first) {
+  /** @param {string} sectionId */
+  function addHeading(sectionId) {
+    const heading = el('div', 'ctv-menu-section');
+    headings.push([heading, sectionId]);
+    list.appendChild(heading);
+  }
+
+  /** @param {string} key @param {boolean} first */
+  function addRow(key, first) {
     const row = el('div', 'ctv-menu-row');
     row.dataset.key = key;
     if (first) row.dataset.sectionStart = 'true';
-
     const text = el('div', 'ctv-menu-row-text');
-    const labelEl = el('div', 'ctv-menu-row-label', label);
-    labelEl.dataset.role = 'label';
-    text.appendChild(labelEl);
-    if (hint) text.appendChild(el('div', 'ctv-menu-row-hint', hint));
+    const label = el('div', 'ctv-menu-row-label');
+    label.dataset.role = 'label';
+    const hint = el('div', 'ctv-menu-row-hint');
+    hint.dataset.role = 'hint';
+    text.append(label, hint);
     row.appendChild(text);
-
     list.appendChild(row);
     rows.push(row);
     return row;
   }
 
-  for (const [sectionId, sectionTitle] of configSections) {
+  for (const [sectionId] of configSections) {
     const keys = configKeys().filter(
       (key) => configGetOption(key).section === sectionId
     );
     if (!keys.length) continue;
-    list.appendChild(el('div', 'ctv-menu-section', sectionTitle));
+    addHeading(sectionId);
 
     keys.forEach((key, index) => {
       try {
         const option = configGetOption(key);
-        const row = addRow(key, option.desc, option.hint, index === 0);
+        const row = addRow(key, index === 0);
         if (option.requires) row.classList.add('ctv-child');
 
+        const value = el('div', 'ctv-menu-value');
         if (option.choices) {
           const picker = el('div', 'ctv-menu-choice');
-          const value = el('span', 'ctv-menu-choice-value');
-          value.dataset.role = 'value';
+          const current = el('span', 'ctv-menu-choice-value');
+          current.dataset.role = 'value';
           picker.append(
             el('span', 'ctv-arrow ctv-arrow-left'),
-            value,
+            current,
             el('span', 'ctv-arrow ctv-arrow-right')
           );
-          row.appendChild(picker);
+          value.appendChild(picker);
         } else {
-          const value = el('div', 'ctv-menu-switch');
-          value.dataset.role = 'value';
-          row.appendChild(value);
+          const toggle = el('div', 'ctv-menu-switch');
+          toggle.dataset.role = 'value';
+          value.appendChild(toggle);
         }
+        row.appendChild(value);
       } catch (error) {
         reportError(`settings row ${key}`, error);
       }
     });
   }
 
-  // About
-  list.appendChild(el('div', 'ctv-menu-section', 'About'));
+  // Actions and About
+  addHeading('actions');
+  addRow(APPLY_ACTION, true).classList.add('ctv-action', 'ctv-apply');
+  addRow(RESET_ACTION, false).classList.add('ctv-action');
+  addHeading('about');
   const about = el('div', 'ctv-menu-about');
-  for (const line of ABOUT_TEXT) about.appendChild(el('div', '', line));
+  const aboutLines = ['about.data', 'about.license', 'about.link'].map(
+    (key) => {
+      const line = el('div', '');
+      about.appendChild(line);
+      return /** @type {[HTMLElement, string]} */ ([line, key]);
+    }
+  );
   list.appendChild(about);
-  addRow(
-    RESET_ACTION,
-    'Restore defaults',
-    'Return every option to its original value',
-    false
-  ).classList.add('ctv-action');
 
   // Footer
   const footer = el('div', 'ctv-menu-footer');
   const legend = el('div', 'ctv-menu-legend-list');
-  for (const [keyName, action] of [
-    ['UP / DOWN', 'Select'],
-    ['OK', 'Change'],
-    ['LEFT / RIGHT', 'Adjust'],
-    ['GREEN / BACK', 'Close']
+  /** @type {[HTMLElement, string][]} */
+  const legendItems = [];
+  for (const [keyName, textKey] of [
+    ['key.updown', 'legend.select'],
+    ['key.ok', 'legend.change'],
+    ['key.leftright', 'legend.adjust'],
+    ['key.close', 'legend.close']
   ]) {
     const item = el('span', 'ctv-menu-legend');
-    item.append(el('span', 'ctv-menu-key', keyName), action);
+    const keyEl = el('span', 'ctv-menu-key');
+    const action = el('span', '');
+    item.append(keyEl, action);
     legend.appendChild(item);
+    legendItems.push([keyEl, keyName], [action, textKey]);
   }
   const position = el('div', 'ctv-menu-position');
   footer.append(legend, position);
 
-  panel.append(header, body, footer);
+  // Unsaved changes bar
+  const dialog = el('div', 'ctv-menu-dialog');
+  const dialogTitle = el('div', 'ctv-menu-dialog-title');
+  const dialogButtons = DIALOG_CHOICES.map((choice) => {
+    const button = el('div', `ctv-menu-button ctv-button-${choice}`);
+    button.dataset.choice = choice;
+    return button;
+  });
+  const dialogRow = el('div', 'ctv-menu-dialog-buttons');
+  dialogRow.append(...dialogButtons);
+  dialog.append(dialogTitle, dialogRow);
+
+  panel.append(header, body, footer, dialog);
 
   let selected = 0;
   let offset = 0;
   let visible = false;
-  let needsReload = false;
-  let confirmReset = false;
+  let dialogOpen = false;
+  let dialogChoice = 0;
+  /** @type {() => void} */
+  let onClosed = () => {};
+
+  function renderTexts() {
+    title.textContent = t('menu.title');
+    subtitle.textContent = t('menu.subtitle', { version: __YTAF_VERSION__ });
+    for (const [heading, id] of headings) {
+      heading.textContent = t(`section.${id}`);
+    }
+    for (const [line, key] of aboutLines) line.textContent = t(key);
+    for (const [action, key] of legendItems) action.textContent = t(key);
+    dialogTitle.textContent = t('unsaved.title');
+    dialogButtons.forEach((button) => {
+      button.textContent = t(`unsaved.${button.dataset.choice}`);
+    });
+  }
 
   /** @param {HTMLElement} row @param {number} index */
   function renderRow(row, index) {
     const key = /** @type {string} */ (row.dataset.key);
-    row.classList.toggle('ctv-selected', index === selected);
-    row.classList.toggle('ctv-disabled', !isAvailable(key));
+    const available = isAvailable(key);
+    row.classList.toggle('ctv-selected', index === selected && !dialogOpen);
+    row.classList.toggle('ctv-disabled', !available);
 
+    const label = /** @type {HTMLElement} */ (
+      row.querySelector('[data-role="label"]')
+    );
+    const hint = /** @type {HTMLElement} */ (
+      row.querySelector('[data-role="hint"]')
+    );
+
+    if (key === APPLY_ACTION) {
+      label.textContent = t('action.apply');
+      hint.textContent = draft.size
+        ? t('action.applyHint')
+        : t('action.applyNone');
+      row.classList.toggle('ctv-ready', draft.size > 0);
+      return;
+    }
     if (key === RESET_ACTION) {
-      const label = /** @type {HTMLElement} */ (
-        row.querySelector('[data-role="label"]')
-      );
-      label.textContent = confirmReset
-        ? 'Press OK again to restore defaults'
-        : 'Restore defaults';
-      row.classList.toggle('ctv-confirm', confirmReset);
+      label.textContent = t('action.reset');
+      hint.textContent = t('action.resetHint');
       return;
     }
 
     const option = configGetOption(key);
-    const value = configRead(key);
+    const value = valueOf(key);
+    label.textContent = optionLabel(key);
+    hint.textContent = available
+      ? optionHint(key)
+      : t('menu.requires', { parent: optionLabel(option.requires) });
+    row.classList.toggle('ctv-modified', draft.has(key));
+
     const valueEl = /** @type {HTMLElement} */ (
       row.querySelector('[data-role="value"]')
     );
     if (option.choices) {
       const choices = option.choices;
       const choiceIndex = choices.findIndex((c) => c.value === value);
-      valueEl.textContent = choices[choiceIndex]?.label ?? String(value);
+      const choice = choices[choiceIndex];
+      valueEl.textContent = choice ? choiceLabel(key, choice) : String(value);
       const picker = /** @type {HTMLElement} */ (valueEl.parentElement);
       picker.classList.toggle('ctv-at-start', choiceIndex <= 0);
       picker.classList.toggle('ctv-at-end', choiceIndex >= choices.length - 1);
     } else {
-      valueEl.textContent = value ? 'ON' : 'OFF';
-      valueEl.classList.toggle('ctv-on', value === true);
+      // A dependent option has no effect while its parent is off, so it is
+      // shown as off.
+      const on = available && value === true;
+      valueEl.textContent = on ? t('menu.on') : t('menu.off');
+      valueEl.classList.toggle('ctv-on', on);
     }
   }
 
   function render() {
+    renderTexts();
     rows.forEach((row, index) => {
       try {
         renderRow(row, index);
@@ -244,26 +325,43 @@ export function createSettingsMenu() {
         reportError(`settings row ${row.dataset.key}`, error);
       }
     });
-    panel.classList.toggle('ctv-pending', needsReload);
-    position.textContent = `${selected + 1} of ${rows.length}`;
+    pending.textContent =
+      draft.size === 1
+        ? t('menu.unsavedOne')
+        : t('menu.unsaved', { count: draft.size });
+    panel.classList.toggle('ctv-pending', draft.size > 0);
+    panel.classList.toggle('ctv-dialog-open', dialogOpen);
+    dialogButtons.forEach((button, index) => {
+      button.classList.toggle(
+        'ctv-selected',
+        dialogOpen && index === dialogChoice
+      );
+    });
+    position.textContent = t('menu.position', {
+      current: selected + 1,
+      total: rows.length
+    });
     scrollToSelected();
   }
 
   function scrollToSelected() {
     const row = rows[selected];
     if (!row) return;
-    // Show the section heading together with the first row of a section.
+    // Show the section heading together with the first row of a section,
+    // and the About text with the last row.
     const heading =
       row.dataset.sectionStart && row.previousElementSibling
         ? /** @type {HTMLElement} */ (row.previousElementSibling)
         : row;
-    // The last row also brings the About text into view.
-    const top =
-      selected === rows.length - 1 ? about.offsetTop : heading.offsetTop;
+    const isLast = selected === rows.length - 1;
+    const top = heading.offsetTop;
+    const bottom = isLast
+      ? about.offsetTop + about.offsetHeight
+      : row.offsetTop + row.offsetHeight;
     offset = computeListOffset({
       offset,
       rowTop: top,
-      rowHeight: row.offsetTop + row.offsetHeight - top,
+      rowHeight: bottom - top,
       listTop: 0,
       viewportHeight: body.clientHeight,
       margin: 8
@@ -281,22 +379,34 @@ export function createSettingsMenu() {
       !isAvailable(/** @type {string} */ (rows[index].dataset.key))
     );
     if (rows[index]) selected = index;
-    confirmReset = false;
     render();
   }
 
+  /** @param {string} key @param {unknown} value */
+  function stage(key, value) {
+    if (value === configRead(key)) draft.delete(key);
+    else draft.set(key, value);
+  }
+
+  function apply() {
+    if (!draft.size) return false;
+    const changes = [...draft];
+    draft.clear();
+    for (const [key, value] of changes) {
+      try {
+        configWrite(key, value);
+      } catch (error) {
+        reportError(`applying ${key}`, error);
+      }
+    }
+    notify(t('notify.applied'));
+    return true;
+  }
+
   function restoreDefaults() {
-    if (!confirmReset) {
-      confirmReset = true;
-      render();
-      return;
+    for (const key of configKeys()) {
+      stage(key, configGetOption(key).default);
     }
-    confirmReset = false;
-    const changed = configReset();
-    if (changed.some((key) => !configGetOption(key).live)) {
-      needsReload = true;
-    }
-    render();
   }
 
   /**
@@ -306,15 +416,49 @@ export function createSettingsMenu() {
   function change(direction, wrap) {
     const key = rows[selected]?.dataset.key;
     if (!key || !isAvailable(key)) return;
-    if (key === RESET_ACTION) {
-      if (wrap) restoreDefaults();
+    if (isAction(key)) {
+      if (!wrap) return;
+      if (key === APPLY_ACTION) apply();
+      else restoreDefaults();
+      render();
       return;
     }
-    const value = nextValue(key, direction, wrap);
-    if (value === configRead(key)) return;
-    configWrite(key, value);
-    if (!configGetOption(key).live) needsReload = true;
+    stage(key, nextValue(key, direction, wrap, valueOf(key)));
     render();
+  }
+
+  function hide() {
+    visible = false;
+    dialogOpen = false;
+    overlay.style.display = 'none';
+    onClosed();
+  }
+
+  /** Closes, or asks first when there are unsaved changes. */
+  function requestClose() {
+    if (!visible) return;
+    if (!draft.size) {
+      hide();
+      return;
+    }
+    dialogOpen = true;
+    dialogChoice = 0;
+    render();
+  }
+
+  function confirmDialog() {
+    const choice = DIALOG_CHOICES[dialogChoice];
+    dialogOpen = false;
+    if (choice === 'apply') {
+      apply();
+      hide();
+    } else if (choice === 'discard') {
+      draft.clear();
+      notify(t('notify.discarded'));
+      hide();
+    } else {
+      render();
+    }
   }
 
   function applyScale() {
@@ -322,49 +466,68 @@ export function createSettingsMenu() {
     panel.style.transform = `translate(-50%, -50%) scale(${scale})`;
   }
 
-  for (const key of configKeys()) {
-    configAddChangeListener(key, () => visible && render());
-  }
+  onLanguageChange(() => visible && render());
 
-  /** Runs a menu action; an error is reported and never reaches YouTube. */
-  const safely =
-    (/** @type {string} */ name, /** @type {() => void} */ fn) => () => {
-      try {
-        fn();
-      } catch (error) {
-        reportError(`settings menu ${name}`, error);
-      }
-    };
+  /**
+   * Handles a remote key while the menu is open.
+   * @param {'up' | 'down' | 'left' | 'right' | 'ok' | 'back'} key
+   */
+  function handleKey(key) {
+    if (!visible) return;
+    if (dialogOpen) {
+      if (key === 'left') dialogChoice = Math.max(0, dialogChoice - 1);
+      else if (key === 'right') {
+        dialogChoice = Math.min(DIALOG_CHOICES.length - 1, dialogChoice + 1);
+      } else if (key === 'ok') return confirmDialog();
+      else if (key === 'back') dialogOpen = false;
+      render();
+      return;
+    }
+    if (key === 'up') move(-1);
+    else if (key === 'down') move(1);
+    else if (key === 'ok') change(1, true);
+    else if (key === 'left') change(-1, false);
+    else if (key === 'right') change(1, false);
+    else if (key === 'back') requestClose();
+  }
 
   return {
     element: overlay,
     isOpen: () => visible,
-    open: safely('open', () => {
-      if (visible) return;
-      visible = true;
-      selected = 0;
-      offset = 0;
-      needsReload = false;
-      confirmReset = false;
-      overlay.style.display = 'block';
-      applyScale();
-      render();
-    }),
-    /** @returns {boolean} whether the app must reload to apply changes */
-    close() {
-      if (!visible) return false;
-      visible = false;
-      confirmReset = false;
-      overlay.style.display = 'none';
-      return needsReload;
+    /** @param {() => void} [whenClosed] */
+    open(whenClosed) {
+      try {
+        if (visible) return;
+        visible = true;
+        selected = 0;
+        offset = 0;
+        dialogOpen = false;
+        draft.clear();
+        onClosed = whenClosed ?? (() => {});
+        overlay.style.display = 'block';
+        applyScale();
+        render();
+      } catch (error) {
+        reportError('settings menu open', error);
+      }
     },
-    up: safely('up', () => move(-1)),
-    down: safely('down', () => move(1)),
-    activate: safely('change', () => change(1, true)),
-    left: safely('change', () => change(-1, false)),
-    right: safely('change', () => change(1, false)),
+    /** @param {Parameters<typeof handleKey>[0]} key */
+    handleKey(key) {
+      try {
+        handleKey(key);
+      } catch (error) {
+        reportError(`settings menu ${key}`, error);
+      }
+    },
+    requestClose,
     get selectedKey() {
       return rows[selected]?.dataset.key;
+    },
+    get unsavedChanges() {
+      return draft.size;
+    },
+    get dialogOpen() {
+      return dialogOpen;
     }
   };
 }

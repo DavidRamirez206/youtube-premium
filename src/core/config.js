@@ -25,14 +25,12 @@ const V2_PREVIOUS_DEFAULTS = {
  *   section: ConfigSection,
  *   hint?: string,
  *   choices?: ConfigChoice[],
- *   requires?: string,
- *   live?: boolean
+ *   requires?: string
  * }} ConfigOption
 
  *
  * `requires` names a switch that must be on for the option to have any
- * effect. `live` options are applied immediately; the others need the app to
- * reload, which the settings menu does when it closes.
+ * effect. Every option applies immediately; none needs an app reload.
  */
 
 /** Menu sections, in display order. */
@@ -151,8 +149,7 @@ const configOptions = new Map([
       section: 'playback',
       desc: 'Default playback speed',
       hint: 'Applied when a video starts. Use LEFT/RIGHT to change it.',
-      choices: SPEED_CHOICES,
-      live: true
+      choices: SPEED_CHOICES
     }
   ],
   [
@@ -206,7 +203,6 @@ const configOptions = new Map([
   [
     'upgradeThumbnails',
     {
-      live: true,
       default: true,
       section: 'content',
       desc: 'High-quality thumbnails'
@@ -217,16 +213,12 @@ const configOptions = new Map([
   [
     'hideLogo',
     {
-      live: true,
       default: false,
       section: 'interface',
       desc: 'Hide the YouTube logo'
     }
   ],
-  [
-    'showWatch',
-    { live: true, default: false, section: 'interface', desc: 'Show clock' }
-  ],
+  ['showWatch', { default: false, section: 'interface', desc: 'Show clock' }],
   [
     'autoAccountSelect',
     {

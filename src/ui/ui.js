@@ -61,9 +61,16 @@ function getKeyColor(evt) {
   return null;
 }
 
-const settingsMenu = createSettingsMenu();
+const settingsMenu = createSettingsMenu({
+  notify: (text) => showNotification(text, 2000, 'green')
+});
 onBodyReady((body) => body.appendChild(settingsMenu.element));
 
+/**
+ * Opens the settings menu, or asks it to close (it asks the user first if
+ * there are unsaved changes). Settings apply without reloading the app.
+ * @param {boolean} [visible]
+ */
 function showOptionsPanel(visible) {
   visible ??= true;
 
@@ -71,17 +78,8 @@ function showOptionsPanel(visible) {
     // Keep the menu above anything YouTube added since it was mounted.
     document.body.appendChild(settingsMenu.element);
     settingsMenu.open();
-  } else if (!visible && settingsMenu.isOpen()) {
-    if (settingsMenu.close()) {
-      showNotification('Applying settings...', 1200, 'green');
-      setTimeout(() => {
-        if (window.ytaf_reloadApp) {
-          window.ytaf_reloadApp();
-        } else {
-          window.location.reload();
-        }
-      }, 200);
-    }
+  } else if (!visible) {
+    settingsMenu.requestClose();
   }
 }
 
@@ -194,6 +192,16 @@ function toggleInspector() {
  */
 const consumedKeys = new Set();
 
+/** @type {Map<number, 'up' | 'down' | 'left' | 'right' | 'ok'>} */
+const MENU_KEYS = new Map([
+  [38, 'up'],
+  [40, 'down'],
+  [37, 'left'],
+  [39, 'right'],
+  [13, 'ok'],
+  [32, 'ok']
+]);
+
 /** @param {KeyboardEvent} evt */
 function swallowKey(evt) {
   const keyCode = evt.keyCode || evt.which;
@@ -216,19 +224,11 @@ const eventHandler = (evt) => {
   if (settingsMenu.isOpen()) {
     // While the menu is open, every key belongs to it.
     if (evt.type === 'keydown') {
-      if (keyColor === 'green' || keyCode === 27 || keyCode === 10009) {
-        showOptionsPanel(false);
-      } else if (keyCode === 38) {
-        settingsMenu.up();
-      } else if (keyCode === 40) {
-        settingsMenu.down();
-      } else if (keyCode === 13 || keyCode === 32) {
-        settingsMenu.activate();
-      } else if (keyCode === 37) {
-        settingsMenu.left();
-      } else if (keyCode === 39) {
-        settingsMenu.right();
-      }
+      const action =
+        keyColor === 'green' || keyCode === 27 || keyCode === 10009
+          ? 'back'
+          : MENU_KEYS.get(keyCode);
+      if (action) settingsMenu.handleKey(action);
     }
     return swallowKey(evt);
   }

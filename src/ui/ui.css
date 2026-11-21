@@ -243,8 +243,121 @@
   background: #151c27;
 }
 
+/* Every card has the same width; sub-options are marked with a line. */
 .ctv-menu-row.ctv-child {
-  margin-left: 36px;
+  position: relative;
+  padding-left: 52px;
+}
+
+.ctv-menu-row.ctv-child::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 24px;
+  width: 4px;
+  border-radius: 2px;
+  background: #334155;
+}
+
+.ctv-menu-row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Fixed value column so switches and pickers line up. */
+.ctv-menu-value {
+  flex: none;
+  width: 190px;
+  margin-left: 24px;
+  text-align: center;
+}
+
+.ctv-menu-value .ctv-menu-switch,
+.ctv-menu-value .ctv-menu-choice {
+  margin-left: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.ctv-menu-row.ctv-modified .ctv-menu-row-label::after {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 12px;
+  border-radius: 50%;
+  background: #2dd4bf;
+  vertical-align: middle;
+}
+
+.ctv-menu-row.ctv-apply .ctv-menu-row-label {
+  color: #94a3b8;
+}
+
+.ctv-menu-row.ctv-apply.ctv-ready {
+  background: #0f3d3a;
+}
+
+.ctv-menu-row.ctv-apply.ctv-ready .ctv-menu-row-label {
+  color: #5eead4;
+}
+
+/* Unsaved changes bar */
+.ctv-menu-dialog {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 28px 36px 32px;
+  background: #111827;
+  border-top: 2px solid #14b8a6;
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.ctv-dialog-open .ctv-menu-dialog {
+  display: block;
+}
+
+.ctv-dialog-open .ctv-menu-body,
+.ctv-dialog-open .ctv-menu-footer {
+  opacity: 0.35;
+}
+
+.ctv-menu-dialog-title {
+  margin-bottom: 20px;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.ctv-menu-dialog-buttons {
+  display: flex;
+}
+
+.ctv-menu-button {
+  min-width: 220px;
+  margin-right: 20px;
+  padding: 14px 28px;
+  border: 2px solid #334155;
+  border-radius: 999px;
+  background: #1e293b;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ctv-menu-button.ctv-selected {
+  border-color: #14b8a6;
+  background: #14b8a6;
+  color: #042f2e;
+  transform: scale(1.04);
+}
+
+.ctv-menu-button.ctv-button-discard.ctv-selected {
+  border-color: #f87171;
+  background: #f87171;
+  color: #450a0a;
 }
 
 .ctv-menu-row.ctv-selected {
@@ -278,7 +391,6 @@
 .ctv-menu-switch,
 .ctv-menu-choice {
   flex: none;
-  margin-left: 24px;
   min-width: 92px;
   padding: 6px 14px;
   border-radius: 999px;
@@ -301,7 +413,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-width: 150px;
   background: #312e81;
   color: #e0e7ff;
 }
@@ -339,12 +450,6 @@
 
 .ctv-menu-row.ctv-action .ctv-menu-row-label {
   color: #fca5a5;
-}
-
-.ctv-menu-row.ctv-confirm {
-  border-color: #f87171;
-  background: #3a1d24;
-  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.22);
 }
 
 .ctv-menu-footer {
