@@ -185,6 +185,25 @@ const configOptions = new Map([
     }
   ],
   [
+    'enableDeArrow',
+    {
+      default: false,
+      section: 'content',
+      desc: 'DeArrow',
+      hint: 'Replace clickbait titles with community ones (dearrow.ajay.app)'
+    }
+  ],
+  [
+    'enableDeArrowThumbnails',
+    {
+      default: true,
+      section: 'content',
+      requires: 'enableDeArrow',
+      desc: 'Use DeArrow thumbnails',
+      hint: 'Community thumbnails instead of clickbait ones'
+    }
+  ],
+  [
     'upgradeThumbnails',
     {
       live: true,
