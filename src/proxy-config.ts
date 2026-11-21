@@ -40,8 +40,14 @@ function pingHost(ip: string): Promise<string> {
       } catch (e) {}
       reject(new Error('not a proxy'));
     };
-    xhr.onerror = () => { clearTimeout(timer); reject(new Error('error')); };
-    xhr.ontimeout = () => { clearTimeout(timer); reject(new Error('timeout')); };
+    xhr.onerror = () => {
+      clearTimeout(timer);
+      reject(new Error('error'));
+    };
+    xhr.ontimeout = () => {
+      clearTimeout(timer);
+      reject(new Error('timeout'));
+    };
 
     xhr.open('GET', `http://${ip}:${PROXY_PORT}/ping`, true);
     xhr.timeout = SCAN_TIMEOUT_MS;
@@ -56,7 +62,7 @@ async function scanBatch(ips: string[]): Promise<string | null> {
   for (let i = 0; i < ips.length; i += BATCH_SIZE) {
     const batch = ips.slice(i, i + BATCH_SIZE);
     try {
-      const found = await Promise.any(batch.map(ip => pingHost(ip)));
+      const found = await Promise.any(batch.map((ip) => pingHost(ip)));
       return found;
     } catch (e) {
       // All in this batch failed, continue to next
@@ -73,18 +79,26 @@ function getDeviceIP(): Promise<string | null> {
   return new Promise((resolve) => {
     try {
       if (window.tizen && window.tizen.systeminfo) {
-        window.tizen.systeminfo.getPropertyValue('WIFI_NETWORK', (wifi: any) => {
-          resolve(wifi && wifi.ipAddress ? wifi.ipAddress : null);
-        }, () => {
-          // WIFI failed, try ethernet
-          try {
-            window.tizen.systeminfo.getPropertyValue('ETHERNET_NETWORK', (eth: any) => {
-              resolve(eth && eth.ipAddress ? eth.ipAddress : null);
-            }, () => resolve(null));
-          } catch (e) {
-            resolve(null);
+        window.tizen.systeminfo.getPropertyValue(
+          'WIFI_NETWORK',
+          (wifi: any) => {
+            resolve(wifi && wifi.ipAddress ? wifi.ipAddress : null);
+          },
+          () => {
+            // WIFI failed, try ethernet
+            try {
+              window.tizen.systeminfo.getPropertyValue(
+                'ETHERNET_NETWORK',
+                (eth: any) => {
+                  resolve(eth && eth.ipAddress ? eth.ipAddress : null);
+                },
+                () => resolve(null)
+              );
+            } catch (e) {
+              resolve(null);
+            }
           }
-        });
+        );
       } else {
         resolve(null);
       }
@@ -129,7 +143,9 @@ export async function discoverProxyIP(): Promise<string> {
       console.info(`[Proxy] Cached proxy verified at ${verified}`);
       return verified;
     } catch (e) {
-      console.info(`[Proxy] Cached IP ${cached} unreachable, scanning subnet...`);
+      console.info(
+        `[Proxy] Cached IP ${cached} unreachable, scanning subnet...`
+      );
       localStorage.removeItem(STORAGE_KEY);
     }
   }

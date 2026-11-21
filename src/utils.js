@@ -5,16 +5,24 @@ export function extractLaunchParams() {
     return JSON.parse(window.launchParams);
   } else if (window.tizen && window.tizen.application) {
     try {
-      const reqAppControl = window.tizen.application.getCurrentApplication().getRequestedAppControl();
+      const reqAppControl = window.tizen.application
+        .getCurrentApplication()
+        .getRequestedAppControl();
       if (reqAppControl && reqAppControl.appControl) {
         const appControl = reqAppControl.appControl;
         const params = {};
         if (appControl.data) {
           appControl.data.forEach((item) => {
-            params[item.key] = item.value && item.value.length === 1 ? item.value[0] : item.value;
+            params[item.key] =
+              item.value && item.value.length === 1
+                ? item.value[0]
+                : item.value;
           });
         }
-        console.info('[TizenLoader] Extracted initial appcontrol params:', params);
+        console.info(
+          '[TizenLoader] Extracted initial appcontrol params:',
+          params
+        );
         return params;
       }
     } catch (e) {
@@ -107,7 +115,10 @@ export function handleLaunch(params) {
       window.location.hash = ytURL.hash;
     } else {
       window.tizenInitialURL = ytURL.toString();
-      console.info('[TizenLoader] Initial launch URL saved:', window.tizenInitialURL);
+      console.info(
+        '[TizenLoader] Initial launch URL saved:',
+        window.tizenInitialURL
+      );
     }
   } else {
     window.location.href = ytURL.toString();

@@ -18,9 +18,9 @@ class Watch {
       }
       this._watch = document.createElement('div');
       this._watch.id = 'ytaf-clock-widget';
-      
+
       const hideLogo = configRead('hideLogo');
-      
+
       this._watch.style.cssText = `
         position: fixed;
         top: 76px;
@@ -58,24 +58,26 @@ class Watch {
       }, 100);
     }
 
-
-
     const updateVisibility = () => {
       if (this._watch) {
-        const isWatchPage = window.location.hash.startsWith('#/watch') || window.location.pathname.startsWith('/watch');
-        
+        const isWatchPage =
+          window.location.hash.startsWith('#/watch') ||
+          window.location.pathname.startsWith('/watch');
+
         let overlayIsDown = false;
         // In YouTube TV, the main player element gets hybridnavfocusable="true" ONLY when the UI overlay is fully hidden.
         // When the UI overlay is visible, focus moves to the controls, and hybridnavfocusable becomes "false".
-        const player = document.querySelector('ytlr-watch-default, ytlr-watch, ytlr-watch-default-2025');
+        const player = document.querySelector(
+          'ytlr-watch-default, ytlr-watch, ytlr-watch-default-2025'
+        );
         if (player) {
           overlayIsDown = player.getAttribute('hybridnavfocusable') === 'true';
         } else {
           // Fallback if the DOM changes in the future
           const video = document.querySelector('video');
-          overlayIsDown = video ? (!video.paused && !video.ended) : false;
+          overlayIsDown = video ? !video.paused && !video.ended : false;
         }
-        
+
         const shouldHide = isWatchPage && overlayIsDown;
         this._watch.style.opacity = shouldHide ? '0' : '1';
       }
@@ -103,7 +105,10 @@ class Watch {
     setTime();
     this._mountTimer = setInterval(() => {
       setTime();
-      if (document.body && (!this._watch || this._watch.parentElement !== document.body)) {
+      if (
+        document.body &&
+        (!this._watch || this._watch.parentElement !== document.body)
+      ) {
         createDiv();
         setTime();
       }

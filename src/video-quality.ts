@@ -35,7 +35,7 @@ function qualityRank(label: string) {
     medium: 50,
     small: 40,
     tiny: 30,
-    auto: 1,
+    auto: 1
   };
 
   if (norm in baseRanks) return baseRanks[norm];
@@ -47,7 +47,9 @@ function qualityRank(label: string) {
 }
 
 function getMaxQualityData(player: any) {
-  let items = player.getAvailableQualityData ? player.getAvailableQualityData() : [];
+  let items = player.getAvailableQualityData
+    ? player.getAvailableQualityData()
+    : [];
   if (!items || !items.length) {
     if (player.getAvailableQualityLevels) {
       const levels = player.getAvailableQualityLevels() || [];
@@ -57,7 +59,9 @@ function getMaxQualityData(player: any) {
   if (!items || !items.length) return undefined;
 
   const best = [...items].sort(
-    (a, b) => qualityRank(b?.qualityLabel ?? b?.quality ?? '') - qualityRank(a?.qualityLabel ?? a?.quality ?? '')
+    (a, b) =>
+      qualityRank(b?.qualityLabel ?? b?.quality ?? '') -
+      qualityRank(a?.qualityLabel ?? a?.quality ?? '')
   )[0];
 
   return best;
@@ -71,7 +75,10 @@ function notifyPlaybackQuality(this: PlayerManager) {
   const selected = player.getPlaybackQualityLabel();
   const maxData = getMaxQualityData(player);
 
-  showNotification(`${selected} selected (Max ${maxData?.qualityLabel || 'Unknown'})`, 3000);
+  showNotification(
+    `${selected} selected (Max ${maxData?.qualityLabel || 'Unknown'})`,
+    3000
+  );
 
   this.removeEventListener('playbackStart', notifyPlaybackQuality);
 }
@@ -88,7 +95,11 @@ function setPlaybackQuality(this: PlayerManager, _: unknown) {
 
   const playerAny = this.player as unknown as {
     setPlaybackQuality?: (quality: string) => void;
-    setPlaybackQualityRange: (min: string, max: string, formatId?: string) => void;
+    setPlaybackQualityRange: (
+      min: string,
+      max: string,
+      formatId?: string
+    ) => void;
   };
 
   if (maxQuality) {
@@ -105,7 +116,11 @@ function setPlaybackQuality(this: PlayerManager, _: unknown) {
     attemptsLeft -= 1;
     const currLabel = this.player.getPlaybackQualityLabel();
     const currQuality = (this.player as any).getPlaybackQuality?.();
-    if (currLabel === maxData?.qualityLabel || currQuality === targetQuality || attemptsLeft <= 0) {
+    if (
+      currLabel === maxData?.qualityLabel ||
+      currQuality === targetQuality ||
+      attemptsLeft <= 0
+    ) {
       clearInterval(enforceTimer);
       return;
     }

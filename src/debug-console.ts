@@ -54,7 +54,9 @@ class OnScreenConsole {
       const original = (console as any)[name];
       (console as any)[name] = (...args: any[]) => {
         if (original) original.apply(console, args);
-        this.log(`[${name.toUpperCase()}] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')}`);
+        this.log(
+          `[${name.toUpperCase()}] ${args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')}`
+        );
       };
     };
 
@@ -65,20 +67,34 @@ class OnScreenConsole {
     intercept('debug');
 
     window.addEventListener('error', (evt) => {
-      this.log(`[UNCAUGHT ERROR] ${evt.message} at ${evt.filename}:${evt.lineno}`);
+      this.log(
+        `[UNCAUGHT ERROR] ${evt.message} at ${evt.filename}:${evt.lineno}`
+      );
     });
 
     window.addEventListener('unhandledrejection', (evt) => {
       this.log(`[UNHANDLED REJECTION] ${evt.reason}`);
     });
 
-    window.addEventListener('keydown', (evt) => {
-      this.log(`[KEYDOWN] key="${evt.key}" code="${evt.code}" keyCode=${evt.keyCode} which=${evt.which}`);
-    }, true);
+    window.addEventListener(
+      'keydown',
+      (evt) => {
+        this.log(
+          `[KEYDOWN] key="${evt.key}" code="${evt.code}" keyCode=${evt.keyCode} which=${evt.which}`
+        );
+      },
+      true
+    );
 
-    window.addEventListener('keyup', (evt) => {
-      this.log(`[KEYUP] key="${evt.key}" code="${evt.code}" keyCode=${evt.keyCode} which=${evt.which}`);
-    }, true);
+    window.addEventListener(
+      'keyup',
+      (evt) => {
+        this.log(
+          `[KEYUP] key="${evt.key}" code="${evt.code}" keyCode=${evt.keyCode} which=${evt.which}`
+        );
+      },
+      true
+    );
   }
 
   public log(text: string) {
@@ -88,7 +104,7 @@ class OnScreenConsole {
     line.style.padding = '2px 0';
     const time = new Date().toLocaleTimeString();
     line.textContent = `[${time}] ${text}`;
-    
+
     // Remote log via image beacon
     try {
       const img = new Image();
@@ -101,7 +117,7 @@ class OnScreenConsole {
     } else {
       this.container.appendChild(line);
     }
-    
+
     // Remove from the bottom if too many lines
     while (this.container.childNodes.length > 150) {
       this.container.removeChild(this.container.lastChild!);

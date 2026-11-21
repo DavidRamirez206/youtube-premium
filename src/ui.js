@@ -87,9 +87,7 @@ const TIZEN_SETTINGS_KEYS = [
 ];
 
 // These keys are wired for live updates without requiring a full app reload.
-const HOT_APPLY_SETTINGS_KEYS = new Set([
-  'hideLogo'
-]);
+const HOT_APPLY_SETTINGS_KEYS = new Set(['hideLogo']);
 
 let optionsPanelVisible = false;
 let optionsSelectedIndex = 0;
@@ -130,7 +128,8 @@ function createOptionsPanel() {
 
   const title = document.createElement('div');
   title.textContent = `YouTube AdFree Settings  v${__YTAF_VERSION__}`;
-  title.style.cssText = 'font-size: 34px; font-weight: 700; margin-bottom: 12px;';
+  title.style.cssText =
+    'font-size: 34px; font-weight: 700; margin-bottom: 12px;';
   panel.appendChild(title);
 
   const hint = document.createElement('div');
@@ -161,7 +160,8 @@ function createOptionsPanel() {
 
     const value = document.createElement('span');
     value.dataset.role = 'value';
-    value.style.cssText = 'font-weight: 700; min-width: 80px; text-align: right;';
+    value.style.cssText =
+      'font-weight: 700; min-width: 80px; text-align: right;';
 
     row.appendChild(label);
     row.appendChild(value);
@@ -214,7 +214,10 @@ function renderOptionsPanel() {
 
 function moveSelectedOption(delta) {
   const max = optionRows.length - 1;
-  optionsSelectedIndex = Math.max(0, Math.min(max, optionsSelectedIndex + delta));
+  optionsSelectedIndex = Math.max(
+    0,
+    Math.min(max, optionsSelectedIndex + delta)
+  );
   renderOptionsPanel();
 
   const selectedRow = optionRows[optionsSelectedIndex];
@@ -234,7 +237,7 @@ function toggleSelectedOption() {
   if (!HOT_APPLY_SETTINGS_KEYS.has(key)) {
     optionsRequireReload = true;
   }
-  
+
   if (key === 'hideLogo' && configRead('showWatch')) {
     optionsRequireReload = true;
   }
@@ -294,19 +297,20 @@ function toggleInspector() {
     showNotification('Overlay Inspector Disabled', 2000, 'yellow');
     return;
   }
-  
+
   showNotification('Overlay Inspector Enabled', 2000, 'yellow');
-  
+
   ytafInspectorContainer = document.createElement('div');
   ytafInspectorContainer.id = 'ytaf-inspector-container';
-  ytafInspectorContainer.style.cssText = 'position: fixed; inset: 0; pointer-events: none; z-index: 2147483647;';
+  ytafInspectorContainer.style.cssText =
+    'position: fixed; inset: 0; pointer-events: none; z-index: 2147483647;';
   document.body.appendChild(ytafInspectorContainer);
 
   const result = [];
   function getAllElements(root) {
     if (!root) return;
     const elements = root.querySelectorAll('*');
-    elements.forEach(el => {
+    elements.forEach((el) => {
       result.push(el);
       if (el.shadowRoot) {
         getAllElements(el.shadowRoot);
@@ -316,16 +320,26 @@ function toggleInspector() {
   getAllElements(document.documentElement);
 
   // We only want overlays (absolute, fixed) that are visible.
-  result.forEach(el => {
+  result.forEach((el) => {
     if (el.id === 'ytaf-inspector-container') return;
     if (el.id === 'ytaf-debug-console') return;
     if (el.id === 'ytaf-options-overlay') return;
-    
+
     try {
       const style = window.getComputedStyle(el);
-      if ((style.position === 'absolute' || style.position === 'fixed') && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0') {
+      if (
+        (style.position === 'absolute' || style.position === 'fixed') &&
+        style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        style.opacity !== '0'
+      ) {
         const rect = el.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0 && rect.width < window.innerWidth * 0.95 && rect.height < window.innerHeight * 0.95) {
+        if (
+          rect.width > 0 &&
+          rect.height > 0 &&
+          rect.width < window.innerWidth * 0.95 &&
+          rect.height < window.innerHeight * 0.95
+        ) {
           // Draw box
           const box = document.createElement('div');
           box.style.cssText = `
@@ -339,12 +353,13 @@ function toggleInspector() {
             box-sizing: border-box;
             background-color: rgba(255, 255, 0, 0.1);
           `;
-          
+
           const label = document.createElement('div');
           let name = el.tagName.toLowerCase();
           if (el.id) name += '#' + el.id;
-          if (el.className && typeof el.className === 'string') name += '.' + el.className.trim().replace(/\s+/g, '.');
-          
+          if (el.className && typeof el.className === 'string')
+            name += '.' + el.className.trim().replace(/\s+/g, '.');
+
           label.innerText = name;
           label.style.cssText = `
             position: absolute;
@@ -357,7 +372,7 @@ function toggleInspector() {
             padding: 2px 4px;
             white-space: nowrap;
           `;
-          
+
           box.appendChild(label);
           ytafInspectorContainer.appendChild(box);
         }
@@ -395,14 +410,18 @@ const eventHandler = (evt) => {
       return false;
     }
 
-    if (evt.type === 'keydown' && (keyCode === 13 || keyCode === 32 || keyCode === 37 || keyCode === 39)) {
+    if (
+      evt.type === 'keydown' &&
+      (keyCode === 13 || keyCode === 32 || keyCode === 37 || keyCode === 39)
+    ) {
       toggleSelectedOption();
       evt.preventDefault();
       evt.stopPropagation();
       return false;
     }
 
-    if (keyCode === 27 || keyCode === 10009) { // Escape / Back / Return
+    if (keyCode === 27 || keyCode === 10009) {
+      // Escape / Back / Return
       if (evt.type === 'keydown') {
         showOptionsPanel(false);
       }

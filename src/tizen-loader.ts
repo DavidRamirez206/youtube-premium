@@ -15,7 +15,7 @@ import { getProxyIP, discoverProxyIP } from './proxy-config';
 function showProxyError() {
   if ((window as any).proxyErrorShown) return;
   (window as any).proxyErrorShown = true;
-  
+
   const inject = () => {
     if (!document.body) {
       setTimeout(inject, 500);
@@ -74,8 +74,8 @@ function showProxyError() {
     if (btn) {
       btn.focus();
       btn.style.border = '2px solid transparent';
-      btn.onfocus = () => btn.style.border = '2px solid #3ea6ff';
-      btn.onblur = () => btn.style.border = '2px solid transparent';
+      btn.onfocus = () => (btn.style.border = '2px solid #3ea6ff');
+      btn.onblur = () => (btn.style.border = '2px solid transparent');
       btn.onclick = () => overlay.remove();
       btn.onkeydown = (e) => {
         if (e.key === 'Enter') overlay.remove();
@@ -98,7 +98,10 @@ export async function runTizenLoader() {
   };
 
   // Auto-discover proxy for older Tizen TVs before patching network calls
-  const isOldTizenEarly = navigator.userAgent.includes('Tizen 5.') || navigator.userAgent.includes('Tizen 4.') || navigator.userAgent.includes('Tizen 3.');
+  const isOldTizenEarly =
+    navigator.userAgent.includes('Tizen 5.') ||
+    navigator.userAgent.includes('Tizen 4.') ||
+    navigator.userAgent.includes('Tizen 3.');
   if (isOldTizenEarly) {
     console.info('[TizenLoader] Old Tizen detected, discovering proxy...');
 
@@ -137,7 +140,7 @@ export async function runTizenLoader() {
 
   try {
     const originalReload = Location.prototype.reload;
-    Location.prototype.reload = function() {
+    Location.prototype.reload = function () {
       console.info('[TizenLoader] Intercepted Location.prototype.reload()');
       if (window.tizen) {
         window.ytaf_reloadApp!();
@@ -145,8 +148,11 @@ export async function runTizenLoader() {
         originalReload.call(this);
       }
     };
-  } catch(e) {
-    console.warn('[TizenLoader] Failed to monkey-patch Location.prototype.reload', e);
+  } catch (e) {
+    console.warn(
+      '[TizenLoader] Failed to monkey-patch Location.prototype.reload',
+      e
+    );
   }
 
   // Helper to log to debug console safely
@@ -163,8 +169,10 @@ export async function runTizenLoader() {
     try {
       let cookieStore = '';
       // Try to load from localStorage if available
-      try { cookieStore = window.localStorage.getItem('ytaf_cookie_polyfill') || ''; } catch (e) {}
-      
+      try {
+        cookieStore = window.localStorage.getItem('ytaf_cookie_polyfill') || '';
+      } catch (e) {}
+
       Object.defineProperty(document, 'cookie', {
         get() {
           return cookieStore;
@@ -173,14 +181,16 @@ export async function runTizenLoader() {
           if (!value) return;
           const newCookie = value.split(';')[0];
           const newKey = newCookie.split('=')[0].trim();
-          
+
           let cookies = cookieStore ? cookieStore.split('; ') : [];
           // Remove old cookie with same key
-          cookies = cookies.filter(c => c.split('=')[0].trim() !== newKey);
+          cookies = cookies.filter((c) => c.split('=')[0].trim() !== newKey);
           cookies.push(newCookie.trim());
-          
+
           cookieStore = cookies.join('; ');
-          try { window.localStorage.setItem('ytaf_cookie_polyfill', cookieStore); } catch (e) {}
+          try {
+            window.localStorage.setItem('ytaf_cookie_polyfill', cookieStore);
+          } catch (e) {}
         },
         configurable: true
       });
@@ -192,7 +202,10 @@ export async function runTizenLoader() {
 
   // 2. Monkey-patch fetch to intercept relative requests
   const originalFetch = window.fetch;
-  window.fetch = function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  window.fetch = function (
+    input: RequestInfo | URL,
+    init?: RequestInit
+  ): Promise<Response> {
     let urlStr = '';
     if (typeof input === 'string') {
       urlStr = input;
@@ -201,7 +214,7 @@ export async function runTizenLoader() {
     } else if (input && typeof input === 'object' && 'url' in input) {
       urlStr = (input as any).url;
     }
-    
+
     // Fix malformed URLs caused by YouTube JS reading window.location.hostname on file://
     if (urlStr.startsWith('https:///')) {
       urlStr = urlStr.replace('https:///', 'https://www.youtube.com/');
@@ -209,13 +222,19 @@ export async function runTizenLoader() {
     if (urlStr.startsWith('http:///')) {
       urlStr = urlStr.replace('http:///', 'http://www.youtube.com/');
     }
-    
+
     // Fix URL-encoded malformed URLs appended to file://
     if (urlStr.match(/^file:\/\/https(%3a|%3A)\/\/\//i)) {
-      urlStr = urlStr.replace(/^file:\/\/https(%3a|%3A)\/\/\//i, 'https://www.youtube.com/');
+      urlStr = urlStr.replace(
+        /^file:\/\/https(%3a|%3A)\/\/\//i,
+        'https://www.youtube.com/'
+      );
     }
     if (urlStr.match(/^file:\/\/http(%3a|%3A)\/\/\//i)) {
-      urlStr = urlStr.replace(/^file:\/\/http(%3a|%3A)\/\/\//i, 'http://www.youtube.com/');
+      urlStr = urlStr.replace(
+        /^file:\/\/http(%3a|%3A)\/\/\//i,
+        'http://www.youtube.com/'
+      );
     }
 
     if (
@@ -236,9 +255,12 @@ export async function runTizenLoader() {
       }
       urlStr = newUrl.toString();
     }
-    
+
     // Inject Visitor ID and Auth Token to fix 403 on youtubei endpoints when cookies aren't sent
-    const isOldTizen = navigator.userAgent.includes('Tizen 5.') || navigator.userAgent.includes('Tizen 4.') || navigator.userAgent.includes('Tizen 3.');
+    const isOldTizen =
+      navigator.userAgent.includes('Tizen 5.') ||
+      navigator.userAgent.includes('Tizen 4.') ||
+      navigator.userAgent.includes('Tizen 3.');
     const needsProxy = isOldTizen;
 
     if (needsProxy && !(window as any).ytaf_proxy_warned) {
@@ -247,7 +269,8 @@ export async function runTizenLoader() {
         if (document.body) {
           clearInterval(warnTimer);
           const warnDiv = document.createElement('div');
-          warnDiv.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: rgba(30, 30, 30, 0.85); color: #aaa; padding: 8px 16px; border-radius: 8px; z-index: 2147483647; font-family: sans-serif; font-size: 13px; pointer-events: none; border: 1px solid rgba(255,255,255,0.08);';
+          warnDiv.style.cssText =
+            'position: fixed; bottom: 20px; right: 20px; background: rgba(30, 30, 30, 0.85); color: #aaa; padding: 8px 16px; border-radius: 8px; z-index: 2147483647; font-family: sans-serif; font-size: 13px; pointer-events: none; border: 1px solid rgba(255,255,255,0.08);';
           warnDiv.innerText = 'Proxy mode active';
           document.body.appendChild(warnDiv);
           setTimeout(() => {
@@ -262,7 +285,11 @@ export async function runTizenLoader() {
     if (urlStr && urlStr.includes('/youtubei/')) {
       if (needsProxy) {
         // PROXY the request through the PC to strip the Origin: file:// header
-        const targetUrl = encodeURIComponent(urlStr.startsWith('http') ? urlStr : 'https://www.youtube.com' + urlStr);
+        const targetUrl = encodeURIComponent(
+          urlStr.startsWith('http')
+            ? urlStr
+            : 'https://www.youtube.com' + urlStr
+        );
         urlStr = `http://${getProxyIP()}:3000/proxy?url=${targetUrl}`;
         logToDebug(`[PROXY-FETCH] ${urlStr}`);
       }
@@ -281,7 +308,7 @@ export async function runTizenLoader() {
     password?: string | null
   ) {
     let urlStr = typeof url === 'string' ? url : url.toString();
-    
+
     // Fix malformed URLs caused by YouTube JS reading window.location.hostname on file://
     if (urlStr.startsWith('https:///')) {
       urlStr = urlStr.replace('https:///', 'https://www.youtube.com/');
@@ -289,13 +316,19 @@ export async function runTizenLoader() {
     if (urlStr.startsWith('http:///')) {
       urlStr = urlStr.replace('http:///', 'http://www.youtube.com/');
     }
-    
+
     // Fix URL-encoded malformed URLs appended to file://
     if (urlStr.match(/^file:\/\/https(%3a|%3A)\/\/\//i)) {
-      urlStr = urlStr.replace(/^file:\/\/https(%3a|%3A)\/\/\//i, 'https://www.youtube.com/');
+      urlStr = urlStr.replace(
+        /^file:\/\/https(%3a|%3A)\/\/\//i,
+        'https://www.youtube.com/'
+      );
     }
     if (urlStr.match(/^file:\/\/http(%3a|%3A)\/\/\//i)) {
-      urlStr = urlStr.replace(/^file:\/\/http(%3a|%3A)\/\/\//i, 'http://www.youtube.com/');
+      urlStr = urlStr.replace(
+        /^file:\/\/http(%3a|%3A)\/\/\//i,
+        'http://www.youtube.com/'
+      );
     }
 
     if (
@@ -312,22 +345,27 @@ export async function runTizenLoader() {
       logToDebug(`[XHR] ${method} ${urlStr}`);
       url = urlStr;
     }
-    
-    const isOldTizen = navigator.userAgent.includes('Tizen 5.') || navigator.userAgent.includes('Tizen 4.') || navigator.userAgent.includes('Tizen 3.');
+
+    const isOldTizen =
+      navigator.userAgent.includes('Tizen 5.') ||
+      navigator.userAgent.includes('Tizen 4.') ||
+      navigator.userAgent.includes('Tizen 3.');
     const needsProxy = isOldTizen;
 
     // PROXY youtubei requests through PC to strip Origin: file:// header
     if (needsProxy && urlStr && urlStr.includes('/youtubei/')) {
-      const targetUrl = encodeURIComponent(urlStr.startsWith('http') ? urlStr : 'https://www.youtube.com' + urlStr);
+      const targetUrl = encodeURIComponent(
+        urlStr.startsWith('http') ? urlStr : 'https://www.youtube.com' + urlStr
+      );
       urlStr = `http://${getProxyIP()}:3000/proxy?url=${targetUrl}`;
       url = urlStr;
       logToDebug(`[PROXY-XHR] ${urlStr}`);
     }
 
     (this as any)._urlStr = urlStr;
-    
+
     (this as any)._urlStr = urlStr;
-    
+
     // Log failures
     this.addEventListener('load', () => {
       if (this.status >= 400) {
@@ -351,7 +389,11 @@ export async function runTizenLoader() {
 
   // 4. Monkey-patch Document.prototype.createElement to intercept relative script/image/video URLs
   const originalCreateElement = Document.prototype.createElement;
-  Document.prototype.createElement = function (this: Document, tagName: string, options?: ElementCreationOptions): HTMLElement {
+  Document.prototype.createElement = function (
+    this: Document,
+    tagName: string,
+    options?: ElementCreationOptions
+  ): HTMLElement {
     const element = originalCreateElement.call(this, tagName, options);
     const tag = tagName.toLowerCase();
 
@@ -390,7 +432,13 @@ export async function runTizenLoader() {
         return originalSetAttribute.call(this, name, value);
       };
 
-      if (tag === 'script' || tag === 'img' || tag === 'video' || tag === 'audio' || tag === 'source') {
+      if (
+        tag === 'script' ||
+        tag === 'img' ||
+        tag === 'video' ||
+        tag === 'audio' ||
+        tag === 'source'
+      ) {
         Object.defineProperty(element, 'src', {
           get() {
             return element.getAttribute('src') || '';
@@ -398,7 +446,7 @@ export async function runTizenLoader() {
           set(value) {
             element.setAttribute('src', value);
           },
-          configurable: true,
+          configurable: true
         });
       }
       if (tag === 'link') {
@@ -409,7 +457,7 @@ export async function runTizenLoader() {
           set(value) {
             element.setAttribute('href', value);
           },
-          configurable: true,
+          configurable: true
         });
       }
     }
@@ -418,17 +466,34 @@ export async function runTizenLoader() {
 
   // 4.5 Monkey-patch createElementNS to neuter the YouTube debug watermark
   const originalCreateElementNS = Document.prototype.createElementNS;
-  Document.prototype.createElementNS = function(this: Document, namespace: string | null, qualifiedName: string, options?: string | ElementCreationOptions): Element {
-    const element = originalCreateElementNS.call(this, namespace, qualifiedName, options);
+  Document.prototype.createElementNS = function (
+    this: Document,
+    namespace: string | null,
+    qualifiedName: string,
+    options?: string | ElementCreationOptions
+  ): Element {
+    const element = originalCreateElementNS.call(
+      this,
+      namespace,
+      qualifiedName,
+      options
+    );
     if (String(qualifiedName).toLowerCase() === 'yt-debug-watermark') {
       const originalSetAttribute = element.setAttribute;
-      element.setAttribute = function(name: any, value: any) {
+      element.setAttribute = function (name: any, value: any) {
         if (String(name).toLowerCase() === 'class' && value) {
           value = String(value).replace(/H3qzme|ZI6Lfc/g, '');
         }
         return originalSetAttribute.call(this, name as string, value as string);
       };
-      try { Object.defineProperty(element, 'className', { get() { return ''; }, set() {} }); } catch(e) {}
+      try {
+        Object.defineProperty(element, 'className', {
+          get() {
+            return '';
+          },
+          set() {}
+        });
+      } catch (e) {}
       if (element instanceof HTMLElement || element instanceof SVGElement) {
         element.style.setProperty('position', 'fixed', 'important');
         element.style.setProperty('top', '-9999px', 'important');
@@ -436,7 +501,11 @@ export async function runTizenLoader() {
         element.style.setProperty('opacity', '0', 'important');
         element.style.setProperty('pointer-events', 'none', 'important');
         const originalSetProperty = element.style.setProperty;
-        element.style.setProperty = function(prop: string, val: string | null, priority?: string) {
+        element.style.setProperty = function (
+          prop: string,
+          val: string | null,
+          priority?: string
+        ) {
           if (['display', 'position', 'top', 'opacity'].includes(prop)) return;
           return originalSetProperty.call(this, prop, val, priority);
         };
@@ -457,7 +526,7 @@ export async function runTizenLoader() {
       'MediaPlayPause',
       'MediaStop',
       'MediaFastForward',
-      'MediaRewind',
+      'MediaRewind'
     ];
     tizenKeys.forEach((keyName) => {
       try {
@@ -475,7 +544,9 @@ export async function runTizenLoader() {
       console.debug('[TizenLoader] Return/Back key intercepted.');
 
       // Check if options panel from UI is open
-      const optionsContainer = document.querySelector('#ytaf-options-overlay, .ytaf-ui-container') as HTMLElement;
+      const optionsContainer = document.querySelector(
+        '#ytaf-options-overlay, .ytaf-ui-container'
+      ) as HTMLElement;
       if (optionsContainer && optionsContainer.style.display !== 'none') {
         if (window.ytaf_showOptionsPanel) {
           window.ytaf_showOptionsPanel(false);
@@ -492,7 +563,7 @@ export async function runTizenLoader() {
         keyCode: 27,
         which: 27,
         bubbles: true,
-        cancelable: true,
+        cancelable: true
       });
       const target = document.activeElement || document.body;
       target.dispatchEvent(escapeEvt);
@@ -509,9 +580,12 @@ export async function runTizenLoader() {
 async function fetchAndRewriteYoutube() {
   const targetUrlStr = window.tizenInitialURL || 'https://www.youtube.com/tv#/';
   const targetUrl = new URL(targetUrlStr);
-  
+
   // We fetch without hash since hash is client-side only
-  const fetchUrl = new URL(targetUrl.pathname + targetUrl.search, 'https://www.youtube.com');
+  const fetchUrl = new URL(
+    targetUrl.pathname + targetUrl.search,
+    'https://www.youtube.com'
+  );
 
   try {
     console.info('[TizenLoader] Fetching YouTube from:', fetchUrl.toString());
@@ -522,7 +596,10 @@ async function fetchAndRewriteYoutube() {
     console.info('[TizenLoader] Fetched HTML size:', html.length);
 
     // Get current local path directory
-    const localAppPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+    const localAppPath = window.location.href.substring(
+      0,
+      window.location.href.lastIndexOf('/') + 1
+    );
     const userScriptTag = `<script src="${localAppPath}webOSUserScripts/userScript.js?v=${Date.now()}"></script>`;
     const baseTag = '<base href="https://www.youtube.com/">';
 
@@ -576,13 +653,16 @@ function showNetworkErrorUI() {
   if (retryBtn) {
     retryBtn.focus();
     retryBtn.addEventListener('click', () => {
-      document.body.innerHTML = '<div style="background-color:#0f0f0f;color:#fff;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;font-size:1.5rem;">Connecting...</div>';
+      document.body.innerHTML =
+        '<div style="background-color:#0f0f0f;color:#fff;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;font-size:1.5rem;">Connecting...</div>';
       setTimeout(fetchAndRewriteYoutube, 500);
     });
   }
 
   let secondsLeft = 5;
-  const countdownText = document.getElementById('retry-countdown') as HTMLParagraphElement;
+  const countdownText = document.getElementById(
+    'retry-countdown'
+  ) as HTMLParagraphElement;
   const timer = setInterval(() => {
     secondsLeft--;
     if (countdownText) {
@@ -591,7 +671,8 @@ function showNetworkErrorUI() {
     if (secondsLeft <= 0) {
       clearInterval(timer);
       if (document.getElementById('tizen-network-error')) {
-        document.body.innerHTML = '<div style="background-color:#0f0f0f;color:#fff;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;font-size:1.5rem;">Connecting...</div>';
+        document.body.innerHTML =
+          '<div style="background-color:#0f0f0f;color:#fff;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;font-size:1.5rem;">Connecting...</div>';
         fetchAndRewriteYoutube();
       }
     }

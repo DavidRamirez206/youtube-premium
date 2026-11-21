@@ -78,12 +78,12 @@ async function upgradeBgImg(element: HTMLElement) {
   // Watch page uses storyboard/preview assets for scrubbing.
   // Rewriting these can break preview rendering on Tizen.
   if (
-    document.body?.classList.contains('WEB_PAGE_TYPE_WATCH') || 
+    document.body?.classList.contains('WEB_PAGE_TYPE_WATCH') ||
     window.location.hash.includes('/watch') ||
     window.location.pathname.includes('/watch') ||
     element.closest('ytlr-watch-default') ||
-    element.closest('.ytp-storyboard') || 
-    element.closest('.ytp-tooltip') || 
+    element.closest('.ytp-storyboard') ||
+    element.closest('.ytp-tooltip') ||
     element.closest('ytlr-preview-thumbnail') ||
     element.closest('[idomkey="preview"]')
   ) {

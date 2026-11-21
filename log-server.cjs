@@ -4,7 +4,7 @@ const url = require('url');
 
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true);
-  
+
   // Handle CORS preflight for all endpoints
   if (req.method === 'OPTIONS') {
     res.writeHead(200, {
@@ -20,13 +20,16 @@ const server = http.createServer((req, res) => {
     if (parsedUrl.query.log) {
       console.log(parsedUrl.query.log);
     }
-    
+
     // Return a transparent 1x1 pixel image
     res.writeHead(200, {
       'Content-Type': 'image/gif',
       'Access-Control-Allow-Origin': '*'
     });
-    const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+    const pixel = Buffer.from(
+      'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+      'base64'
+    );
     return res.end(pixel);
   }
 
@@ -59,7 +62,7 @@ const server = http.createServer((req, res) => {
       delete headers['referer'];
       // Sometimes accept-encoding can mess up proxy responses if we don't decode them,
       // so we remove it and let Node fetch it transparently.
-      delete headers['accept-encoding']; 
+      delete headers['accept-encoding'];
 
       const options = {
         hostname: targetUrl.hostname,
@@ -73,7 +76,7 @@ const server = http.createServer((req, res) => {
         // Prepare response headers, appending CORS
         const responseHeaders = { ...proxyRes.headers };
         responseHeaders['Access-Control-Allow-Origin'] = '*';
-        
+
         res.writeHead(proxyRes.statusCode || 200, responseHeaders);
         proxyRes.pipe(res, { end: true });
       });
@@ -101,5 +104,7 @@ const server = http.createServer((req, res) => {
 
 const PORT = 3000;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[YTAF Remote Logger + Proxy] Listening on http://0.0.0.0:${PORT}`);
+  console.log(
+    `[YTAF Remote Logger + Proxy] Listening on http://0.0.0.0:${PORT}`
+  );
 });
