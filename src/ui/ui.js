@@ -8,6 +8,7 @@ import {
 } from '../core/config.js';
 import './ui.css';
 import { requireElement } from '../player_api/helpers';
+import { computeListOffset } from './menu-scroll.js';
 
 // We handle key events ourselves.
 window.__spatialNavigation__.keyMode = 'NONE';
@@ -121,22 +122,25 @@ function createOptionsPanel() {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
     padding: 24px;
     box-sizing: border-box;
-    overflow-y: auto;
+    overflow: hidden;
   `;
 
   const title = document.createElement('div');
   title.textContent = `ClearTube TV  v${__YTAF_VERSION__}`;
   title.style.cssText =
-    'font-size: 34px; font-weight: 700; margin-bottom: 12px;';
+    'position: relative; z-index: 1; background: #111; font-size: 34px; font-weight: 700; margin-bottom: 12px;';
   panel.appendChild(title);
 
   const hint = document.createElement('div');
   hint.textContent = 'Use UP/DOWN to select, OK to toggle, GREEN/BACK to close';
-  hint.style.cssText = 'font-size: 18px; color: #9ad9ab; margin-bottom: 16px;';
+  hint.style.cssText =
+    'position: relative; z-index: 1; background: #111; font-size: 18px; color: #9ad9ab; padding-bottom: 16px;';
   panel.appendChild(hint);
 
   const list = document.createElement('div');
-  list.style.cssText = 'display: flex; flex-direction: column; gap: 10px;';
+  list.dataset.role = 'list';
+  list.style.cssText =
+    'display: flex; flex-direction: column; gap: 10px; transition: transform 0.12s ease-out;';
 
   TIZEN_SETTINGS_KEYS.forEach((key) => {
     const row = document.createElement('div');
@@ -218,10 +222,26 @@ function moveSelectedOption(delta) {
   );
   renderOptionsPanel();
 
-  const selectedRow = optionRows[optionsSelectedIndex];
-  if (selectedRow) {
-    selectedRow.scrollIntoView({ block: 'nearest' });
-  }
+  scrollToSelectedOption();
+}
+
+let listOffset = 0;
+
+/** Keeps the selected row visible. See menu-scroll.js for why not scrollTop. */
+function scrollToSelectedOption() {
+  const row = optionRows[optionsSelectedIndex];
+  const list = row?.parentElement;
+  const panel = list?.parentElement;
+  if (!row || !list || !panel) return;
+
+  listOffset = computeListOffset({
+    offset: listOffset,
+    rowTop: row.offsetTop - list.offsetTop,
+    rowHeight: row.offsetHeight,
+    listTop: list.offsetTop,
+    viewportHeight: panel.clientHeight
+  });
+  list.style.transform = `translateY(-${listOffset}px)`;
 }
 
 function toggleSelectedOption() {
@@ -261,7 +281,9 @@ function showOptionsPanel(visible) {
     optionsPanel.style.setProperty('display', 'block', 'important');
     optionsSelectedIndex = 0;
     optionsRequireReload = false;
+    listOffset = 0;
     renderOptionsPanel();
+    scrollToSelectedOption();
     optionsPanelVisible = true;
   } else if (!visible && optionsPanelVisible) {
     optionsPanel.style.setProperty('display', 'none', 'important');
