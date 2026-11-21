@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["ESNext", "DOM"],
+    "types": ["vitest/importMeta"]
+  },
+  "include": ["./src", "./test", "./vitest.config.ts"]
+}
