@@ -235,6 +235,20 @@ const configOptions = new Map([
       desc: 'Skip account selection',
       hint: 'Bypass "Who\'s watching?" on start-up'
     }
+  ],
+  [
+    'language',
+    {
+      default: 'auto',
+      section: 'interface',
+      desc: 'Language',
+      hint: 'Language of the ClearTube TV menus and messages',
+      choices: [
+        { value: 'auto', label: 'Automatic' },
+        { value: 'en', label: 'English' },
+        { value: 'es', label: 'Español' }
+      ]
+    }
   ]
 ]);
 
