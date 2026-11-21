@@ -1,5 +1,13 @@
-*.ipk
+# Dependencies
 /node_modules/
+
+# Build output
 /dist/
+/coverage/
+*.ipk
+*.wgt
+*.manifest.json
+
+# OS / editor
 .DS_Store
 /.vscode/
