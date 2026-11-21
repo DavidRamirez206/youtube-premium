@@ -1,83 +1,132 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../src/player_api', async (orig) => ({
   ...(await orig<typeof import('../src/player_api')>()),
-  // The module installs itself on import; keep that from blocking.
+  // The module installs itself on import; keep the player API pending.
   getPlayerManager: () => new Promise(() => {})
 }));
 
-const { applyPlaybackSpeed, installPlaybackSpeed } =
+const { installPlaybackSpeed, watchVideoId, ENFORCE_MS } =
   await import('../src/features/playback-speed');
-const { PlayerMode } = await import('../src/player_api');
 const { configWrite } = await import('../src/core/config.js');
 
-function fakeManager(mode = PlayerMode.NORMAL) {
-  const target = new EventTarget();
-  const player = { setPlaybackRate: vi.fn() };
-  return Object.assign(target, { player, playerMode: mode }) as never as {
-    player: typeof player;
-    playerMode: number;
-    dispatchEvent(e: Event): boolean;
-    addEventListener(t: string, cb: () => void): void;
+function setup(rate = 1.5) {
+  // A separate document so the module's own install does not interfere.
+  const doc = document.implementation.createHTMLDocument('player');
+  const location = { hash: '#/watch?v=abcdefghijk' };
+  const video = doc.createElement('video');
+  doc.body.appendChild(video);
+  let time = 0;
+  const notify = vi.fn();
+  const setPlayerRate = vi.fn();
+  installPlaybackSpeed(doc, {
+    getHash: () => location.hash,
+    getRate: () => rate,
+    now: () => time,
+    notify,
+    setPlayerRate
+  });
+  const fire = (type: string) => video.dispatchEvent(new Event(type));
+  return {
+    location,
+    video,
+    fire,
+    notify,
+    setPlayerRate,
+    advance: (ms: number) => (time += ms)
   };
 }
 
-describe('applyPlaybackSpeed', () => {
-  it('uses the player API and the video element', () => {
-    const player = { setPlaybackRate: vi.fn() };
-    const video = document.createElement('video');
-    applyPlaybackSpeed(player, video, 1.5);
-    expect(player.setPlaybackRate).toHaveBeenCalledWith(1.5);
-    expect(video.playbackRate).toBe(1.5);
-  });
-
-  it('still sets the video when the API is missing or throws', () => {
-    const video = document.createElement('video');
-    applyPlaybackSpeed({}, video, 2);
-    expect(video.playbackRate).toBe(2);
-    const throwing = {
-      setPlaybackRate: () => {
-        throw new Error('nope');
-      }
-    };
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
-    applyPlaybackSpeed(throwing, video, 1.25);
-    expect(video.playbackRate).toBe(1.25);
+describe('watchVideoId', () => {
+  it('reads the video of the watch page only', () => {
+    expect(watchVideoId('#/watch?v=abcdefghijk&t=10')).toBe('abcdefghijk');
+    expect(watchVideoId('#/watch?list=x&v=abcdefghijk')).toBe('abcdefghijk');
+    expect(watchVideoId('#/')).toBeNull();
+    expect(watchVideoId('#/shorts?v=abcdefghijk')).toBeNull();
+    expect(watchVideoId('#/watch')).toBeNull();
   });
 });
 
-describe('installPlaybackSpeed', () => {
-  it('applies the configured speed once per new video', () => {
-    configWrite('playbackSpeed', 1.75);
-    const manager = fakeManager();
-    const video = document.createElement('video');
-    installPlaybackSpeed(manager as never, () => video);
-
-    manager.dispatchEvent(new Event('newVideo'));
-    manager.dispatchEvent(new Event('playbackStart'));
-    expect(video.playbackRate).toBe(1.75);
-
-    // The user picks another speed in YouTube's menu: keep it.
-    video.playbackRate = 1;
-    manager.dispatchEvent(new Event('playbackStart'));
-    expect(video.playbackRate).toBe(1);
+describe('playback speed', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('leaves previews and Shorts alone', () => {
-    configWrite('playbackSpeed', 2);
-    const manager = fakeManager(PlayerMode.PREVIEW);
-    const video = document.createElement('video');
-    installPlaybackSpeed(manager as never, () => video);
-    manager.dispatchEvent(new Event('newVideo'));
-    manager.dispatchEvent(new Event('playbackStart'));
-    expect(video.playbackRate).toBe(1);
+  it('sets the speed when a video starts and announces it', () => {
+    const { video, fire, notify, setPlayerRate } = setup(1.5);
+    fire('loadedmetadata');
+    expect(video.playbackRate).toBe(1.5);
+    expect(setPlayerRate).toHaveBeenCalledWith(1.5);
+    expect(notify).toHaveBeenCalledWith('Speed 1.5x');
   });
 
-  it('applies a new speed chosen in the menu right away', () => {
-    const manager = fakeManager();
-    const video = document.createElement('video');
-    installPlaybackSpeed(manager as never, () => video);
-    configWrite('playbackSpeed', 1.25);
+  it('undoes YouTube resetting the speed right after the start', () => {
+    const { video, fire, advance } = setup(2);
+    fire('playing');
+    advance(500);
+    video.playbackRate = 1; // YouTube restores its own speed
+    fire('ratechange');
+    expect(video.playbackRate).toBe(2);
+  });
+
+  it('respects a speed chosen later in YouTube’s menu', () => {
+    const { video, fire, advance } = setup(2);
+    fire('playing');
+    advance(ENFORCE_MS + 1);
+    video.playbackRate = 1.25;
+    fire('ratechange');
     expect(video.playbackRate).toBe(1.25);
+  });
+
+  it('applies again to the next video', () => {
+    const { location, video, fire, advance } = setup(1.75);
+    fire('playing');
+    advance(ENFORCE_MS + 1);
+    video.playbackRate = 1;
+    location.hash = '#/watch?v=bbbbbbbbbbb';
+    fire('loadedmetadata');
+    expect(video.playbackRate).toBe(1.75);
+  });
+
+  it('leaves previews outside the watch page alone', () => {
+    const { location, video, fire } = setup(2);
+    location.hash = '#/';
+    fire('playing');
+    expect(video.playbackRate).toBe(1);
+  });
+
+  it('does not announce normal speed', () => {
+    const { fire, notify } = setup(1);
+    fire('playing');
+    expect(notify).not.toHaveBeenCalled();
+  });
+
+  it('keeps working if the player API throws', () => {
+    const doc = document.implementation.createHTMLDocument('player');
+    const video = doc.createElement('video');
+    doc.body.appendChild(video);
+    installPlaybackSpeed(doc, {
+      getHash: () => '#/watch?v=abcdefghijk',
+      getRate: () => 1.25,
+      notify: () => {},
+      setPlayerRate: () => {
+        throw new Error('no API');
+      }
+    });
+    video.dispatchEvent(new Event('playing'));
+    expect(video.playbackRate).toBe(1.25);
+  });
+
+  it('applies a new speed from the menu to the current video', () => {
+    const doc = document.implementation.createHTMLDocument('player');
+    const video = doc.createElement('video');
+    doc.body.appendChild(video);
+    installPlaybackSpeed(doc, {
+      getHash: () => '#/watch?v=abcdefghijk',
+      notify: () => {}
+    });
+    configWrite('playbackSpeed', 1.1);
+    expect(video.playbackRate).toBe(1.1);
+    configWrite('playbackSpeed', 1);
   });
 });
