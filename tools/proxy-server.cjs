@@ -1,6 +1,21 @@
 const http = require('http');
 const https = require('https');
 
+/**
+ * Only YouTube API traffic may go through the proxy. Without this check any
+ * device on the network could use it to reach arbitrary hosts, including
+ * other machines on the LAN.
+ * @param {URL} target
+ */
+function isAllowedTarget(target) {
+  return (
+    target.protocol === 'https:' &&
+    (target.port === '' || target.port === '443') &&
+    (target.hostname === 'youtube.com' ||
+      target.hostname.endsWith('.youtube.com'))
+  );
+}
+
 const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url ?? '/', 'http://localhost');
 
@@ -52,8 +67,11 @@ const server = http.createServer((req, res) => {
 
     try {
       const targetUrl = new URL(targetUrlStr);
-      const isHttps = targetUrl.protocol === 'https:';
-      const client = isHttps ? https : http;
+      if (!isAllowedTarget(targetUrl)) {
+        res.writeHead(403, { 'Access-Control-Allow-Origin': '*' });
+        return res.end('Target not allowed');
+      }
+      const client = https;
 
       // Copy headers, but remove restricted ones
       const headers = { ...req.headers };
@@ -66,7 +84,7 @@ const server = http.createServer((req, res) => {
 
       const options = {
         hostname: targetUrl.hostname,
-        port: targetUrl.port || (isHttps ? 443 : 80),
+        port: 443,
         path: targetUrl.pathname + targetUrl.search,
         method: req.method,
         headers: headers
@@ -103,8 +121,11 @@ const server = http.createServer((req, res) => {
 });
 
 const PORT = 3000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(
-    `[YTAF Remote Logger + Proxy] Listening on http://0.0.0.0:${PORT}`
-  );
-});
+
+if (require.main === module) {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`[ClearTube proxy] Listening on http://0.0.0.0:${PORT}`);
+  });
+}
+
+module.exports = { isAllowedTarget, server };
