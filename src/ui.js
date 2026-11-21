@@ -12,8 +12,6 @@ import { requireElement } from './player_api/helpers';
 // We handle key events ourselves.
 window.__spatialNavigation__.keyMode = 'NONE';
 
-const ARROW_KEY_CODE = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
-
 const colorCodeMap = new Map([
   [403, 'red'],
 
@@ -231,7 +229,7 @@ function toggleSelectedOption() {
   if (!selectedRow) return;
 
   const key = selectedRow.dataset.key;
-  const nextValue = !Boolean(configRead(key));
+  const nextValue = !configRead(key);
   configWrite(key, nextValue);
 
   if (!HOT_APPLY_SETTINGS_KEYS.has(key)) {
@@ -377,7 +375,9 @@ function toggleInspector() {
           ytafInspectorContainer.appendChild(box);
         }
       }
-    } catch (e) {}
+    } catch {
+      // Elements can be detached while the inspector walks the tree.
+    }
   });
 }
 

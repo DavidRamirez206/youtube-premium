@@ -64,7 +64,7 @@ class Watch {
           window.location.hash.startsWith('#/watch') ||
           window.location.pathname.startsWith('/watch');
 
-        let overlayIsDown = false;
+        let overlayIsDown;
         // In YouTube TV, the main player element gets hybridnavfocusable="true" ONLY when the UI overlay is fully hidden.
         // When the UI overlay is visible, focus moves to the controls, and hybridnavfocusable becomes "false".
         const player = document.querySelector(

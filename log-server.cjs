@@ -89,7 +89,7 @@ const server = http.createServer((req, res) => {
 
       // Pipe request body to proxy request
       req.pipe(proxyReq, { end: true });
-    } catch (error) {
+    } catch {
       console.error(`[Proxy Error] Invalid URL: ${targetUrlStr}`);
       res.writeHead(400, { 'Access-Control-Allow-Origin': '*' });
       return res.end('Invalid URL');
