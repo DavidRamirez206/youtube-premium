@@ -2,6 +2,7 @@
 // the side menu from YouTube TV API responses before the app renders them.
 
 import { configRead } from '../core/config';
+import { addJsonTransformer } from '../hooks/json-parse';
 
 type Json = Record<string, any>;
 
@@ -74,16 +75,6 @@ export function removeShorts(data: unknown): number {
   return removed;
 }
 
-const originalParse = JSON.parse;
-
-JSON.parse = function parse(this: unknown, ...args: Parameters<JSON['parse']>) {
-  const result = originalParse.apply(this, args);
-  if (result && typeof result === 'object' && configRead('removeShorts')) {
-    try {
-      removeShorts(result);
-    } catch (e) {
-      console.warn('[shorts] filter failed', e);
-    }
-  }
-  return result;
-} as JSON['parse'];
+addJsonTransformer('shorts', (data) => {
+  if (configRead('removeShorts')) removeShorts(data);
+});

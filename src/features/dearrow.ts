@@ -13,6 +13,7 @@
 import sha256 from 'tiny-sha256';
 import { configRead } from '../core/config';
 import { FetchRegistry } from '../hooks';
+import { addJsonTransformer, parseJson } from '../hooks/json-parse';
 
 type Json = Record<string, any>;
 
@@ -271,7 +272,6 @@ export function withTimeout(promise: Promise<unknown>, ms: number) {
   });
 }
 
-const originalParse = JSON.parse;
 const cache = new BrandingCache((url) => window.fetch(url));
 
 const enabled = () => Boolean(configRead('enableDeArrow'));
@@ -286,21 +286,13 @@ export function brandResponse(data: unknown) {
   cache.load(ids).catch((e: unknown) => console.warn('[DeArrow]', e));
 }
 
-JSON.parse = function parse(this: unknown, ...args: Parameters<JSON['parse']>) {
-  const result = originalParse.apply(this, args);
-  if (result && typeof result === 'object' && enabled()) {
-    try {
-      brandResponse(result);
-    } catch (e) {
-      console.warn('[DeArrow] failed to apply titles', e);
-    }
-  }
-  return result;
-} as JSON['parse'];
+addJsonTransformer('dearrow', (data) => {
+  if (enabled()) brandResponse(data);
+});
 
 FetchRegistry.getInstance().waitBeforeResponse(async (url, response) => {
   if (!enabled() || !API_PATHS.test(url.pathname)) return;
   const text = await response.clone().text();
-  const ids = collectVideoIds(originalParse(text));
+  const ids = collectVideoIds(parseJson(text));
   if (ids.length) await withTimeout(cache.load(ids), PREFETCH_TIMEOUT_MS);
 });

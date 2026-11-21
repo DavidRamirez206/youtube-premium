@@ -145,7 +145,10 @@ describe('removeShorts', () => {
 describe('JSON.parse hook', () => {
   it('filters parsed responses only when the option is on', async () => {
     const { configWrite } = await import('../src/core/config.js');
-    const body = JSON.stringify({ items: [short('s'), video('v')] });
+    const body = JSON.stringify({
+      responseContext: {},
+      items: [short('s'), video('v')]
+    });
 
     configWrite('removeShorts', false);
     expect(JSON.parse(body).items).toHaveLength(2);

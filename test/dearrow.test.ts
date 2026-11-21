@@ -184,7 +184,7 @@ describe('integration with JSON.parse', () => {
         new Response(JSON.stringify({ [ID]: { titles: [title('Honest')] } }))
       );
     const { configWrite } = await import('../src/core/config.js');
-    const body = JSON.stringify({ items: [lockup(ID)] });
+    const body = JSON.stringify({ responseContext: {}, items: [lockup(ID)] });
 
     configWrite('enableDeArrow', false);
     JSON.parse(body);

@@ -4,6 +4,7 @@
 // API responses here. Any preview that still starts is stopped.
 
 import { configRead } from '../core/config';
+import { addJsonTransformer } from '../hooks/json-parse';
 import { getPlayerManager, PlayerMode } from '../player_api';
 import type { YTPlayer } from '../player_api';
 
@@ -50,19 +51,9 @@ export function stripPreviewCommands(data: unknown): number {
   return removed;
 }
 
-const originalParse = JSON.parse;
-
-JSON.parse = function parse(this: unknown, ...args: Parameters<JSON['parse']>) {
-  const result = originalParse.apply(this, args);
-  if (result && typeof result === 'object' && configRead('disablePreviews')) {
-    try {
-      stripPreviewCommands(result);
-    } catch (e) {
-      console.warn('[previews] filter failed', e);
-    }
-  }
-  return result;
-} as JSON['parse'];
+addJsonTransformer('disable-previews', (data) => {
+  if (configRead('disablePreviews')) stripPreviewCommands(data);
+});
 
 interface PreviewTarget {
   readonly player: YTPlayer;

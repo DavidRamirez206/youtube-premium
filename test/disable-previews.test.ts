@@ -59,7 +59,7 @@ describe('stripPreviewCommands', () => {
 
 describe('JSON.parse hook', () => {
   it('strips previews only when the option is on', () => {
-    const body = JSON.stringify({ items: [tile()] });
+    const body = JSON.stringify({ responseContext: {}, items: [tile()] });
     configWrite('disablePreviews', false);
     expect(JSON.parse(body).items[0].tileRenderer).toHaveProperty(
       'onFocusCommand'

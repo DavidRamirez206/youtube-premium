@@ -1,25 +1,14 @@
-/* eslint no-redeclare: 0 */
-/* global fetch:writable */
 import { configRead } from '../core/config';
+import { addJsonTransformer } from '../hooks/json-parse';
 
 /**
  * This is a minimal reimplementation of the following uBlock Origin rule:
  * https://github.com/uBlockOrigin/uAssets/blob/master/filters/filters.txt
  */
-const origParse = JSON.parse;
-JSON.parse = function () {
-  /** @type {unknown} */
-  const r = origParse.apply(this, arguments);
-
-  // TODO: add below to a dump-level logger
-  // if (
-  //   !(Object.keys(r).length === 1 && 'data' in r && typeof r.data === 'boolean')
-  // ) {
-  //   console.debug('JSON.parse', r);
-  // }
-
+/** @param {Record<string, any>} r */
+export function removeAds(r) {
   if (!configRead('enableAdBlock')) {
-    return r;
+    return;
   }
 
   if (r?.adPlacements) {
@@ -62,9 +51,10 @@ JSON.parse = function () {
       (elm) => !elm?.command?.reelWatchEndpoint?.adClientParams?.isAd
     );
   }
+}
 
-  return r;
-};
+// Ads also appear in JSON embedded in the page, so every object is checked.
+addJsonTransformer('adblock', removeAds, { innertubeOnly: false });
 
 // Drop `adSlotRenderer`
 // `adSlotRenderer` can occur as,
