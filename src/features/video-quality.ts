@@ -1,6 +1,6 @@
 import { configRead } from '../core/config';
 import { getPlayerManager, PlayerMode } from '../player_api';
-import type { EventMapOf, PlayerManager, VideoID } from '../player_api';
+import type { EventMapOf, PlayerManager } from '../player_api';
 import { showNotification } from '../ui/ui';
 
 const playerManager = await getPlayerManager();
@@ -135,8 +135,6 @@ function setPlaybackQuality(this: PlayerManager, _: unknown) {
     return;
   }
 
-  let timeoutToken: number | undefined;
-
   // No reliable event for quality change, so poll for it
   const intervalToken = window.setInterval(() => {
     const currQuality = this.player.getPlaybackQualityLabel();
@@ -147,7 +145,7 @@ function setPlaybackQuality(this: PlayerManager, _: unknown) {
     }
   }, 100);
 
-  timeoutToken = window.setTimeout(() => {
+  const timeoutToken = window.setTimeout(() => {
     console.warn('[video-quality] timed out waiting for quality change');
     clearInterval(intervalToken);
     notifyPlaybackQuality.call(this);

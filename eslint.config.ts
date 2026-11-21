@@ -7,6 +7,7 @@ import stylistic from '@stylistic/eslint-plugin';
 import prettierConfig from 'eslint-config-prettier/flat';
 import regexpPlugin from 'eslint-plugin-regexp';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 import pkgJson from './package.json' with { type: 'json' };
 
 const defaultSourceType: Linter.SourceType = 'module';
@@ -74,6 +75,28 @@ const configs = [
   },
 
   { files: ['src/**/*'], languageOptions: { globals: { ...globals.browser } } },
+
+  // TypeScript files: without a parser ESLint skipped them entirely.
+  ...tseslint.configs.recommended.map((cfg) => ({
+    ...cfg,
+    files: ['**/*.{ts,mts,cts}']
+  })),
+  {
+    files: ['**/*.{ts,mts,cts}'],
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { vars: 'local', argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+      ],
+      '@typescript-eslint/no-unused-expressions': [
+        'error',
+        { allowShortCircuit: true, allowTernary: true }
+      ],
+      // The codebase talks to undocumented YouTube internals.
+      '@typescript-eslint/no-explicit-any': 'off'
+    }
+  },
 
   {
     // Why doesn't ESLint do this by default is beyond me.

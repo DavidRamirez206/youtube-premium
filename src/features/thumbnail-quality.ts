@@ -34,7 +34,7 @@ checkWebpFeature('lossy', (_, support) => {
 
 function rewriteURL(url: URL) {
   const YT_THUMBNAIL_PATHNAME_REGEX =
-    /vi(?:_webp)?(\/.*?\/)([a-z0-9]+?)(_\w*?)?\.[a-z]+$/g;
+    /vi(?:_webp)?(\/.*?\/)([a-z0-9]+)(_\w*)?\.[a-z]+$/g;
 
   const YT_TARGET_THUMBNAIL_NAMES = [
     'sddefault',
@@ -69,7 +69,7 @@ function rewriteURL(url: URL) {
 function parseCSSUrl(value: string): URL | undefined {
   try {
     return new URL(value.slice(4, -1).replace(/["']/g, ''));
-  } catch (e) {
+  } catch {
     return undefined; // Not a valid URL
   }
 }

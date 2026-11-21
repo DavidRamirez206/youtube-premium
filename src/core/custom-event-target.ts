@@ -55,6 +55,7 @@ export const TypedCustomEvent = CustomEvent as {
   prototype: BaseTypedEvent<EventTarget, CustomEvent<unknown>, string>;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- an event map with no events
 interface EmptyEventMap {}
 
 type EventMapValue<

@@ -31,9 +31,9 @@ export class ResolveCommandRegistry {
     extra?: unknown
   ) => {
     console.group(`[${this.constructor.name}] Resolving`);
-    console.debug(`Command:`);
+    console.debug('Command:');
     console.debug(command);
-    console.debug(`Extra:`);
+    console.debug('Extra:');
     console.debug(extra);
     console.groupEnd();
 

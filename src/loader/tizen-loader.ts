@@ -193,7 +193,9 @@ export async function runTizenLoader() {
       // Try to load from localStorage if available
       try {
         cookieStore = window.localStorage.getItem('ytaf_cookie_polyfill') || '';
-      } catch (e) {}
+      } catch {
+        // localStorage unavailable: start with an empty cookie jar.
+      }
 
       Object.defineProperty(document, 'cookie', {
         get() {
@@ -214,7 +216,9 @@ export async function runTizenLoader() {
           cookieStore = cookies.join('; ');
           try {
             window.localStorage.setItem('ytaf_cookie_polyfill', cookieStore);
-          } catch (e) {}
+          } catch {
+            // Quota exceeded or storage disabled: keep the in-memory value.
+          }
         },
         configurable: true
       });

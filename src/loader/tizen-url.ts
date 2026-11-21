@@ -20,7 +20,7 @@ export function fixYouTubeUrl(url: string): string {
   if (!url) return url;
 
   let out = url
-    .replace(/^(https?):\/\/\/+/i, `${YOUTUBE_ORIGIN}/`)
+    .replace(/^(https?):\/{3,}/i, `${YOUTUBE_ORIGIN}/`)
     .replace(/^file:\/\/https?%3a\/\/\//i, `${YOUTUBE_ORIGIN}/`)
     // After URL parsing, `https:///youtubei/x` becomes host `youtubei`, and
     // `api/lounge` is built as `https://api/lounge`. Single-label hosts are

@@ -86,7 +86,7 @@ export class FetchRegistry extends CustomEventTarget<EventMap> {
       throw new TypeError('Failed to fetch');
     }
 
-    // @ts-expect-error
+    // @ts-expect-error -- FetchTarget may be any toString()-able value, which fetch() accepts at runtime
     const res = await this.#originalFetch(resource, init);
 
     if (window.__ytaf_debug__) {

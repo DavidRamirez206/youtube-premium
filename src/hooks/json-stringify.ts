@@ -22,7 +22,7 @@ function stringify(
     const ctx = value?.playbackContext?.contentPlaybackContext as unknown;
     if (!isPrimitive(ctx)) {
       (ctx as Record<string, unknown>).isInlinePlaybackNoAd = true;
-      console.info(`[JSON.stringify] Set isInlinePlaybackNoAd`);
+      console.info('[JSON.stringify] Set isInlinePlaybackNoAd');
     }
   }
 

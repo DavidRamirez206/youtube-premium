@@ -34,7 +34,9 @@ function pingHost(ip: string): Promise<string> {
           resolve(ip);
           return;
         }
-      } catch (e) {}
+      } catch {
+        // Not JSON: not our proxy.
+      }
       reject(new Error('not a proxy'));
     };
     xhr.onerror = () => {
@@ -59,9 +61,11 @@ async function scanBatch(ips: string[]): Promise<string | null> {
   for (let i = 0; i < ips.length; i += BATCH_SIZE) {
     const batch = ips.slice(i, i + BATCH_SIZE);
     try {
+      // Batches run one after another on purpose, to limit open sockets.
+      // eslint-disable-next-line no-await-in-loop
       const found = await Promise.any(batch.map((ip) => pingHost(ip)));
       return found;
-    } catch (e) {
+    } catch {
       // All in this batch failed, continue to next
     }
   }
@@ -91,7 +95,7 @@ function getDeviceIP(): Promise<string | null> {
                 },
                 () => resolve(null)
               );
-            } catch (e) {
+            } catch {
               resolve(null);
             }
           }
@@ -99,7 +103,7 @@ function getDeviceIP(): Promise<string | null> {
       } else {
         resolve(null);
       }
-    } catch (e) {
+    } catch {
       resolve(null);
     }
   });
@@ -139,7 +143,7 @@ export async function discoverProxyIP(): Promise<string | null> {
       resolvedProxyIP = verified;
       console.info(`[Proxy] Cached proxy verified at ${verified}`);
       return verified;
-    } catch (e) {
+    } catch {
       console.info(
         `[Proxy] Cached IP ${cached} unreachable, scanning subnet...`
       );
