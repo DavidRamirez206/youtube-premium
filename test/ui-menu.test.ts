@@ -51,4 +51,26 @@ describe('settings menu keys', () => {
     vi.advanceTimersByTime(500);
     expect(window.ytaf_reloadApp).toHaveBeenCalled();
   });
+
+  it('explains the Blue button when no video is playing', () => {
+    expect(press(KEY.BLUE)).toEqual([]);
+    expect(document.body.textContent).toContain(
+      'Audio-only mode: play a video first'
+    );
+  });
+
+  it('toggles audio-only mode on the watch page', () => {
+    const video = document.createElement('video');
+    Object.defineProperty(video, 'currentSrc', { value: 'blob:x' });
+    document.body.appendChild(video);
+    window.location.hash = '#/watch?v=abc';
+
+    press(KEY.BLUE);
+    expect(video.style.visibility).toBe('hidden');
+    press(KEY.BLUE);
+    expect(video.style.visibility).toBe('');
+
+    video.remove();
+    window.location.hash = '';
+  });
 });

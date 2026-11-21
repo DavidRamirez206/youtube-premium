@@ -491,7 +491,12 @@ const eventHandler = (evt) => {
     return swallowKey(evt);
   } else if (keyColor === 'blue') {
     if (evt.type === 'keydown') {
-      initAudioOnlyToggle();
+      const video = getActiveVideo();
+      if (video) {
+        initAudioOnlyToggle(video);
+      } else {
+        showNotification('Audio-only mode: play a video first', 2000, 'blue');
+      }
     }
     return swallowKey(evt);
   } else if (keyColor === 'yellow') {
@@ -529,7 +534,7 @@ export function showNotification(text, time = 3000, color = 'grey') {
 
   const elm = document.createElement('div');
   const elmInner = document.createElement('div');
-  elmInner.innerText = text;
+  elmInner.textContent = text;
   elmInner.classList.add('message');
   elmInner.classList.add('message-hidden');
   elm.appendChild(elmInner);
@@ -599,9 +604,21 @@ function applyUIFixes() {
 let audioOnlyEnabled = false;
 let overlayObserver = null;
 
-async function initAudioOnlyToggle() {
-  const elVideo = await requireElement('video', HTMLVideoElement);
+/**
+ * The video being watched, or null on other pages. YouTube TV reuses one
+ * <video> element, also for silent previews on the home screen.
+ * @returns {HTMLVideoElement | null}
+ */
+export function getActiveVideo() {
+  const video = document.querySelector('video');
+  const onWatchPage = window.location.hash.startsWith('#/watch');
+  return video instanceof HTMLVideoElement && video.currentSrc && onWatchPage
+    ? video
+    : null;
+}
 
+/** @param {HTMLVideoElement} elVideo */
+async function initAudioOnlyToggle(elVideo) {
   audioOnlyEnabled = !audioOnlyEnabled;
   elVideo.style.visibility = audioOnlyEnabled ? 'hidden' : '';
 
