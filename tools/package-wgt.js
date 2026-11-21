@@ -14,13 +14,9 @@ import { zipSync } from 'fflate';
 import pkgJson from '../package.json' with { type: 'json' };
 
 const DIST = 'dist';
-const EXCLUDE = [
-  /\.map$/,
-  /\.LICENSE\.txt$/,
-  /^tizen\//,
-  /^brand\//,
-  /^appinfo\.json$/
-];
+// Source maps are for debugging only; appinfo.json is the webOS manifest.
+// *.LICENSE.txt files carry third-party notices and must be shipped.
+const EXCLUDE = [/\.map$/, /^appinfo\.json$/];
 
 /**
  * @param {string} dir

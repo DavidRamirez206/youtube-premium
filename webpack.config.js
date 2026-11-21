@@ -85,6 +85,8 @@ const makeConfig = (_env, argv) => [
           {
             context: 'assets',
             from: '**/*',
+            // Logo sources and the Tizen manifest are not app assets.
+            globOptions: { ignore: ['**/brand/**', '**/tizen/**'] },
             transform: {
               transformer(input, absolutePath) {
                 if (basename(absolutePath) === 'appinfo.json') {
