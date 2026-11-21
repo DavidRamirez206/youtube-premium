@@ -43,6 +43,7 @@ import './app_api/index';
 import './features/adblock.js';
 import './hooks/json-stringify';
 import './features/shorts';
+import './features/disable-previews';
 import './features/sponsorblock.js';
 import './ui/ui.js';
 import './styles/font-fix.css';

@@ -164,6 +164,15 @@ const configOptions = new Map([
       hint: 'Cards that cover the last seconds of a video'
     }
   ],
+  [
+    'disablePreviews',
+    {
+      default: false,
+      section: 'playback',
+      desc: 'Disable autoplay previews',
+      hint: 'Do not play videos when a tile is focused'
+    }
+  ],
 
   // Content
   [
