@@ -1,5 +1,6 @@
-import './ui/debug-console';
-import './features/watch.js';
+// Entry point of index.html. Runs before YouTube TV is loaded: it resolves
+// the launch URL and, on Tizen, fetches YouTube and writes it into this
+// document. Everything that customises YouTube lives in userScript.ts.
 import { extractLaunchParams, handleLaunch } from './core/utils';
 import { runTizenLoader } from './loader/tizen-loader';
 
