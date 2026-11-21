@@ -1,9 +1,8 @@
 const http = require('http');
 const https = require('https');
-const url = require('url');
 
 const server = http.createServer((req, res) => {
-  const parsedUrl = url.parse(req.url, true);
+  const parsedUrl = new URL(req.url ?? '/', 'http://localhost');
 
   // Handle CORS preflight for all endpoints
   if (req.method === 'OPTIONS') {
@@ -17,8 +16,9 @@ const server = http.createServer((req, res) => {
 
   // Logger endpoint
   if (parsedUrl.pathname === '/' || parsedUrl.pathname === '/log') {
-    if (parsedUrl.query.log) {
-      console.log(parsedUrl.query.log);
+    const log = parsedUrl.searchParams.get('log');
+    if (log) {
+      console.log(log);
     }
 
     // Return a transparent 1x1 pixel image
@@ -44,7 +44,7 @@ const server = http.createServer((req, res) => {
 
   // Proxy endpoint
   if (parsedUrl.pathname === '/proxy') {
-    const targetUrlStr = parsedUrl.query.url;
+    const targetUrlStr = parsedUrl.searchParams.get('url');
     if (!targetUrlStr) {
       res.writeHead(400);
       return res.end('Missing URL parameter');

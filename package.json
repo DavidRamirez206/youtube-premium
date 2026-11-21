@@ -12,6 +12,7 @@
     "package": "ares-package -n dist",
     "package:tizen": "node tools/package-wgt.js",
     "icons": "node tools/render-icons.js",
+    "proxy": "node tools/proxy-server.cjs",
     "deploy": "node tools/deploy.js",
     "inspect": "ares-inspect youtube.leanback.v4",
     "launch": "ares-launch youtube.leanback.v4",

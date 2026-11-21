@@ -39,7 +39,7 @@ To circumvent this, the app includes a fallback proxy specifically for older mod
 
 1. Start the proxy server on your development machine by running:
    ```bash
-   node log-server.cjs
+   pnpm proxy
    ```
 2. The proxy server acts as an intermediary, intercepting blocked API calls and transparently stripping the restricted `Origin: file://` and `Referer` headers before forwarding them to YouTube.
 3. The app automatically detects if you are on an older Tizen TV or a `file://` endpoint and will route traffic through your PC's IP address (configured as `YOUR_PROXY_IP:3000` in the source code).
