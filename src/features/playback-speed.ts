@@ -3,6 +3,7 @@
 // video. Previews and Shorts keep their normal speed.
 
 import { configAddChangeListener, configRead } from '../core/config';
+import { reportError } from '../core/safe';
 import { getPlayerManager, PlayerMode } from '../player_api';
 import type { YTPlayer } from '../player_api';
 
@@ -57,4 +58,6 @@ export function installPlaybackSpeed(
   });
 }
 
-void getPlayerManager().then((manager) => installPlaybackSpeed(manager));
+getPlayerManager()
+  .then((manager) => installPlaybackSpeed(manager))
+  .catch((error: unknown) => reportError('playback speed', error));

@@ -4,6 +4,7 @@
 // API responses here. Any preview that still starts is stopped.
 
 import { configRead } from '../core/config';
+import { reportError } from '../core/safe';
 import { addJsonTransformer } from '../hooks/json-parse';
 import { getPlayerManager, PlayerMode } from '../player_api';
 import type { YTPlayer } from '../player_api';
@@ -75,4 +76,6 @@ export function installPreviewStopper(manager: PreviewTarget) {
   });
 }
 
-void getPlayerManager().then((manager) => installPreviewStopper(manager));
+getPlayerManager()
+  .then((manager) => installPreviewStopper(manager))
+  .catch((error: unknown) => reportError('preview stopper', error));
