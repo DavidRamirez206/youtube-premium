@@ -11,7 +11,7 @@ declare global {
 }
 
 import { getProxyIP, discoverProxyIP } from './proxy-config';
-import { localAppBase } from './tizen-url';
+import { buildLocalSearch, localAppBase, localAppUrl } from './tizen-url';
 
 function showProxyError() {
   if ((window as any).proxyErrorShown) return;
@@ -94,8 +94,7 @@ export async function runTizenLoader() {
 
   window.ytaf_reloadApp = () => {
     console.info('[TizenLoader] Reloading app context...');
-    const localAppPath = window.location.href.split('#')[0] ?? '';
-    window.location.href = localAppPath;
+    window.location.href = localAppUrl(window.location.href);
   };
 
   // Auto-discover proxy for older Tizen TVs before patching network calls
@@ -467,56 +466,6 @@ export async function runTizenLoader() {
     return element;
   } as any;
 
-  // 4.5 Monkey-patch createElementNS to neuter the YouTube debug watermark
-  const originalCreateElementNS = Document.prototype.createElementNS;
-  Document.prototype.createElementNS = function (
-    this: Document,
-    namespace: string | null,
-    qualifiedName: string,
-    options?: string | ElementCreationOptions
-  ): Element {
-    const element = originalCreateElementNS.call(
-      this,
-      namespace,
-      qualifiedName,
-      options
-    );
-    if (String(qualifiedName).toLowerCase() === 'yt-debug-watermark') {
-      const originalSetAttribute = element.setAttribute;
-      element.setAttribute = function (name: any, value: any) {
-        if (String(name).toLowerCase() === 'class' && value) {
-          value = String(value).replace(/H3qzme|ZI6Lfc/g, '');
-        }
-        return originalSetAttribute.call(this, name as string, value as string);
-      };
-      try {
-        Object.defineProperty(element, 'className', {
-          get() {
-            return '';
-          },
-          set() {}
-        });
-      } catch (e) {}
-      if (element instanceof HTMLElement || element instanceof SVGElement) {
-        element.style.setProperty('position', 'fixed', 'important');
-        element.style.setProperty('top', '-9999px', 'important');
-        element.style.setProperty('display', 'none', 'important');
-        element.style.setProperty('opacity', '0', 'important');
-        element.style.setProperty('pointer-events', 'none', 'important');
-        const originalSetProperty = element.style.setProperty;
-        element.style.setProperty = function (
-          prop: string,
-          val: string | null,
-          priority?: string
-        ) {
-          if (['display', 'position', 'top', 'opacity'].includes(prop)) return;
-          return originalSetProperty.call(this, prop, val, priority);
-        };
-      }
-    }
-    return element;
-  } as typeof Document.prototype.createElementNS;
-
   // 5. Tizen Remote Key Registration
   if (window.tizen && window.tizen.tvinputdevice) {
     const tizenKeys = [
@@ -606,10 +555,18 @@ async function fetchAndRewriteYoutube() {
     // Inject base href and our userScript at the very beginning of <head>
     html = html.replace('<head>', `<head>${baseTag}${userScriptTag}`);
 
-    // Set location hash to what we parsed from initial URL (if any)
-    if (targetUrl.hash) {
-      console.info('[TizenLoader] Setting initial hash:', targetUrl.hash);
-      window.location.hash = targetUrl.hash;
+    // YouTube reads its launch options from location.search, so expose the
+    // launch query on the local page. env_hideWatermark hides the
+    // "NO DEBUG ACCESS" watermark shown outside youtube.com.
+    const localUrl =
+      localAppUrl(window.location.href) +
+      buildLocalSearch(targetUrl) +
+      (targetUrl.hash || '#/');
+    try {
+      window.history.replaceState(null, '', localUrl);
+    } catch (e) {
+      console.warn('[TizenLoader] replaceState failed:', e);
+      if (targetUrl.hash) window.location.hash = targetUrl.hash;
     }
 
     // Set loader executed flag
