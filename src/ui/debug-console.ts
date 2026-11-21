@@ -35,7 +35,7 @@ class OnScreenConsole {
         display: none;
       `;
       document.body.appendChild(this.container);
-      this.log('=== YTAF On-Screen Debug Console Initialized ===');
+      this.log('ClearTube TV debug console');
     };
 
     if (document.body) {

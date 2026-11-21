@@ -422,7 +422,7 @@ async function initAudioOnlyToggle(elVideo) {
     if (overlay) return;
 
     overlay = Object.assign(document.createElement('div'), {
-      textContent: 'Audio-Only Mode Enabled - Press [BLUE] to toggle',
+      textContent: 'Audio-only mode. Press BLUE to show the video again.',
       className: YTAF_OVERLAY_CLASS
     });
     root.prepend(overlay);
@@ -453,9 +453,5 @@ if (document.body) {
 }
 
 setTimeout(() => {
-  showNotification(
-    'Press [GREEN] to open YTAF configuration screen',
-    2000,
-    'green'
-  );
+  showNotification('ClearTube TV: press GREEN for settings', 2000, 'green');
 });
