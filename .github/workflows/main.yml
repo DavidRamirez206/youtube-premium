@@ -17,7 +17,7 @@ jobs:
       - uses: ./.github/actions/setup-env
       - run: pnpm run "/^build|^lint:all/"
       - run: pnpm run test:compat
-      - run: pnpm run package
+      - run: pnpm run package:webos
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

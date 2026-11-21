@@ -18,8 +18,8 @@ jobs:
       - uses: ./.github/actions/setup-env
 
       - run: pnpm run build
-      - run: pnpm run package
-      - run: pnpm run manifest
+      - run: pnpm run package:webos
+      - run: pnpm run manifest:webos
 
       - name: Create release
         uses: ncipollo/release-action@v1
