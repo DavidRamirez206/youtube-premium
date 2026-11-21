@@ -11,6 +11,7 @@ declare global {
 }
 
 import { getProxyIP, discoverProxyIP } from './proxy-config';
+import { localAppBase } from './tizen-url';
 
 function showProxyError() {
   if ((window as any).proxyErrorShown) return;
@@ -598,10 +599,7 @@ async function fetchAndRewriteYoutube() {
     console.info('[TizenLoader] Fetched HTML size:', html.length);
 
     // Get current local path directory
-    const localAppPath = window.location.href.substring(
-      0,
-      window.location.href.lastIndexOf('/') + 1
-    );
+    const localAppPath = localAppBase(window.location.href);
     const userScriptTag = `<script src="${localAppPath}webOSUserScripts/userScript.js?v=${Date.now()}"></script>`;
     const baseTag = '<base href="https://www.youtube.com/">';
 
