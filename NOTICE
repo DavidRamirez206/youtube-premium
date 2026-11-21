@@ -1,0 +1,29 @@
+ClearTube TV
+Unofficial ad-free client for YouTube on Samsung Tizen and LG webOS TVs.
+
+Copyright (C) 2021-2026 youtube-webos contributors
+  https://github.com/webosbrew/youtube-webos
+Copyright (C) 2026 TheMysticle and youtube-tizenos contributors
+  https://github.com/TheMysticle/youtube-tizenos
+Copyright (C) 2026 David Ramírez and ClearTube TV contributors
+  https://github.com/DavidRamirez206/youtube-tizenos
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, version 3 of the License only (GPL-3.0-only), together
+with the additional terms in ADDITIONAL-TERMS.md permitted by section 7 of
+that License.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See LICENSE for details.
+
+ClearTube TV is a modified version of youtube-tizenos, which is itself a
+modified version of youtube-webos. The full list of authors is available in
+the Git history.
+
+"YouTube" is a trademark of Google LLC. "Samsung" and "Tizen" are
+trademarks of Samsung Electronics Co., Ltd. and the Linux Foundation
+respectively. "LG" and "webOS" are trademarks of LG Electronics Inc. This
+project is not affiliated with, endorsed by or sponsored by any of them.
+See DISCLAIMER.md and TRADEMARKS.md.

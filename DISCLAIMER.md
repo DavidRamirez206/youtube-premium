@@ -1,0 +1,38 @@
+# Disclaimer and terms of use
+
+By installing or using ClearTube TV you accept these terms.
+
+1. **Unofficial software.** ClearTube TV is an independent, community-made
+   project. It is **not** affiliated with, endorsed by or sponsored by
+   Google LLC, YouTube, Samsung Electronics or LG Electronics. "YouTube" is
+   a trademark of Google LLC and is used only to describe the service the
+   app connects to.
+2. **What it does.** The app loads the public YouTube TV web interface from
+   youtube.com and modifies it on your device (ad filtering, SponsorBlock,
+   interface tweaks). It does not host, copy, download or redistribute any
+   video content.
+3. **Your responsibility.** You are responsible for making sure your use
+   complies with the YouTube Terms of Service and the laws of your country.
+   Blocking ads may be against those terms. Supporting creators through
+   official means (YouTube Premium, memberships, sponsors) is encouraged.
+4. **No warranty.** The software is provided "as is", without warranty of
+   any kind, as stated in sections 15 and 16 of the [LICENSE](LICENSE) and
+   in [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md). The authors are not
+   responsible for account restrictions, data loss, device problems or any
+   other damage.
+5. **Developer mode and signing.** Installing the app requires enabling
+   developer mode on your TV and signing the package with your own
+   certificate. Follow the manufacturer's instructions; you do this at your
+   own risk.
+6. **Privacy.** ClearTube TV has no analytics and collects no personal data.
+   Besides YouTube, it only contacts the optional services you enable, and
+   only with what they need:
+   - [SponsorBlock](https://sponsor.ajay.app/), through the
+     `sponsorblock.inf.re` API mirror: the first characters of a hash of the
+     video ID.
+   - [DeArrow](https://dearrow.ajay.app/) (when enabled): the video ID.
+7. **Third-party data.** SponsorBlock and DeArrow data are provided by their
+   own projects under their own licenses and terms. ClearTube TV only
+   displays them.
+8. **Changes.** These terms may change with new releases. The version in
+   the release you use applies.
