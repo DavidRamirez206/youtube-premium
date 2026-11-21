@@ -42,7 +42,7 @@ if (typeof window !== 'undefined') {
 import './app_api/index';
 import './features/adblock.js';
 import './hooks/json-stringify';
-import './features/shorts.js';
+import './features/shorts';
 import './features/sponsorblock.js';
 import './ui/ui.js';
 import './styles/font-fix.css';

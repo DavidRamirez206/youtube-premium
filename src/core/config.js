@@ -172,7 +172,7 @@ const configOptions = new Map([
       default: false,
       section: 'content',
       desc: 'Hide Shorts',
-      hint: 'In the subscriptions feed'
+      hint: 'Home, subscriptions, search and the side menu'
     }
   ],
   [
