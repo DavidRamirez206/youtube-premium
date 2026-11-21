@@ -1,5 +1,6 @@
 import sha256 from 'tiny-sha256';
 import { guard } from '../core/safe';
+import { t } from '../core/i18n';
 import { configAddChangeListener, configRead } from '../core/config';
 import { showNotification } from '../ui/ui';
 
@@ -394,9 +395,17 @@ class SponsorBlockHandler {
           return;
         }
 
-        const skipName = barTypes[segment.category]?.name || segment.category;
+        const skipName = t(
+          `segment.${segment.category}`,
+          {},
+          barTypes[segment.category]?.name || segment.category
+        );
         console.debug(this.videoID, 'Skipping', segment);
-        showNotification(`Skipped ${skipName}`, 2000, 'green');
+        showNotification(
+          t('notify.skipped', { segment: skipName }),
+          2000,
+          'green'
+        );
 
         // Prevent infinite loops when currentTime updates asynchronously
         segment.skipped = true;

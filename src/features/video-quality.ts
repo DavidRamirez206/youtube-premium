@@ -2,6 +2,7 @@ import { configRead } from '../core/config';
 import { getPlayerManager, PlayerMode } from '../player_api';
 import type { EventMapOf, PlayerManager } from '../player_api';
 import { showNotification } from '../ui/ui';
+import { t } from '../core/i18n';
 
 const playerManager = await getPlayerManager();
 
@@ -77,7 +78,7 @@ function notifyPlaybackQuality(this: PlayerManager) {
   const maxData = getMaxQualityData(player);
 
   showNotification(
-    `${selected} selected (Max ${maxData?.qualityLabel || 'Unknown'})`,
+    t('notify.quality', { selected, max: maxData?.qualityLabel || '?' }),
     3000
   );
 

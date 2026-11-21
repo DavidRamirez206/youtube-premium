@@ -4,6 +4,8 @@ import './ui.css';
 import { requireElement } from '../player_api/helpers';
 import { createSettingsMenu } from './settings-menu.js';
 import { onBodyReady } from '../core/dom';
+import { t } from '../core/i18n';
+import { reportError } from '../core/safe';
 
 // We handle key events ourselves.
 window.__spatialNavigation__.keyMode = 'NONE';
@@ -95,11 +97,11 @@ function toggleInspector() {
       ytafInspectorContainer.remove();
       ytafInspectorContainer = null;
     }
-    showNotification('Overlay Inspector Disabled', 2000, 'yellow');
+    showNotification(t('notify.inspectorOff'), 2000, 'yellow');
     return;
   }
 
-  showNotification('Overlay Inspector Enabled', 2000, 'yellow');
+  showNotification(t('notify.inspectorOn'), 2000, 'yellow');
 
   ytafInspectorContainer = document.createElement('div');
   ytafInspectorContainer.id = 'ytaf-inspector-container';
@@ -245,10 +247,10 @@ const eventHandler = (evt) => {
       if (consoleElm) {
         if (consoleElm.style.display === 'none') {
           consoleElm.style.display = 'block';
-          showNotification('Debug console shown', 2000, 'red');
+          showNotification(t('notify.debugShown'), 2000, 'red');
         } else {
           consoleElm.style.display = 'none';
-          showNotification('Debug console hidden', 2000, 'red');
+          showNotification(t('notify.debugHidden'), 2000, 'red');
         }
       }
     }
@@ -259,7 +261,7 @@ const eventHandler = (evt) => {
       if (video) {
         initAudioOnlyToggle(video);
       } else {
-        showNotification('Audio-only mode: play a video first', 2000, 'blue');
+        showNotification(t('notify.audioNoVideo'), 2000, 'blue');
       }
     }
     return swallowKey(evt);
@@ -278,42 +280,51 @@ window.addEventListener('keydown', eventHandler, true);
 window.addEventListener('keypress', eventHandler, true);
 window.addEventListener('keyup', eventHandler, true);
 
-const COLOR_MAP = {
-  red: 'rgba(255, 0, 0, 0.9)',
-  green: 'rgba(0, 162, 0, 0.9)',
-  yellow: 'rgba(255, 255, 0, 0.9)',
-  blue: 'rgba(0, 128, 255, 0.9)',
-  indigo: 'rgba(99, 102, 241, 0.9)',
-  grey: 'rgba(255, 255, 255, 0.5)',
-  none: 'rgba(0, 0, 0, 0)'
-};
+const TOAST_LIMIT = 3;
 
-export function showNotification(text, time = 3000, color = 'grey') {
-  if (!document.querySelector('.ytaf-notification-container')) {
-    console.debug('Adding notification container');
-    const c = document.createElement('div');
-    c.classList.add('ytaf-notification-container');
-    document.body.appendChild(c);
-  }
+/**
+ * Shows a short message at the top of the screen. Identical messages
+ * replace each other and at most three are shown at once.
+ * @param {string} text
+ * @param {number} [time] milliseconds on screen
+ * @param {'green' | 'blue' | 'red' | 'yellow' | 'grey'} [kind] accent colour
+ */
+export function showNotification(text, time = 3000, kind = 'grey') {
+  try {
+    if (!document.body) return;
+    let container = document.querySelector('.ctv-toasts');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'ctv-toasts';
+    }
+    // Keep it above anything YouTube added since.
+    document.body.appendChild(container);
 
-  const elm = document.createElement('div');
-  const elmInner = document.createElement('div');
-  elmInner.textContent = text;
-  elmInner.classList.add('message');
-  elmInner.classList.add('message-hidden');
-  elm.appendChild(elmInner);
-  document.querySelector('.ytaf-notification-container').appendChild(elm);
-  elmInner.style.borderColor = COLOR_MAP[color] || color;
+    for (const old of Array.from(container.children)) {
+      if (old.textContent === text) old.remove();
+    }
+    while (container.children.length >= TOAST_LIMIT) {
+      container.firstElementChild?.remove();
+    }
 
-  setTimeout(() => {
-    elmInner.classList.remove('message-hidden');
-  }, 100);
-  setTimeout(() => {
-    elmInner.classList.add('message-hidden');
+    const toast = document.createElement('div');
+    toast.className = `ctv-toast ctv-toast-${kind} ctv-toast-hidden`;
+    const dot = document.createElement('span');
+    dot.className = 'ctv-toast-dot';
+    const label = document.createElement('span');
+    label.className = 'ctv-toast-text';
+    label.textContent = text;
+    toast.append(dot, label);
+    container.appendChild(toast);
+
+    setTimeout(() => toast.classList.remove('ctv-toast-hidden'), 30);
     setTimeout(() => {
-      elm.remove();
-    }, 1000);
-  }, time);
+      toast.classList.add('ctv-toast-hidden');
+      setTimeout(() => toast.remove(), 300);
+    }, time);
+  } catch (error) {
+    reportError('notification', error);
+  }
 }
 
 /**
@@ -401,7 +412,7 @@ async function initAudioOnlyToggle(elVideo) {
   applyAudioOverlayFilter();
 
   showNotification(
-    `Audio-Only mode: ${audioOnlyEnabled ? 'Enabled' : 'Disabled'}`,
+    t(audioOnlyEnabled ? 'notify.audioOn' : 'notify.audioOff'),
     2000,
     'blue'
   );
@@ -422,7 +433,7 @@ async function initAudioOnlyToggle(elVideo) {
     if (overlay) return;
 
     overlay = Object.assign(document.createElement('div'), {
-      textContent: 'Audio-only mode. Press BLUE to show the video again.',
+      textContent: t('notify.audioOverlay'),
       className: YTAF_OVERLAY_CLASS
     });
     root.prepend(overlay);
@@ -453,5 +464,5 @@ if (document.body) {
 }
 
 setTimeout(() => {
-  showNotification('ClearTube TV: press GREEN for settings', 2000, 'green');
+  showNotification(t('notify.welcome'), 3000, 'green');
 });

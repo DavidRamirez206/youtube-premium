@@ -36,47 +36,6 @@
   font-size: 1.3rem;
 }
 
-.ytaf-notification-container {
-  position: fixed;
-  top: 5.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(90vw, 900px);
-  font-size: 18pt;
-  z-index: 2147483001;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.ytaf-notification-container .message {
-  background: linear-gradient(
-    135deg,
-    rgba(18, 18, 18, 0.97),
-    rgba(33, 33, 33, 0.97)
-  );
-  color: white;
-  padding: 0.75em 1em;
-  margin: 0.35em 0;
-  transition: all 0.25s ease-in-out;
-  opacity: 1;
-  line-height: 1.2;
-  border: 2px solid rgba(120, 255, 170, 0.55);
-  border-radius: 12px;
-  display: block;
-  min-width: 420px;
-  text-align: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
-}
-
-.ytaf-notification-container .message-hidden {
-  opacity: 0;
-  margin: 0 0.5em;
-  padding: 0 1em;
-  line-height: 0;
-}
-
 .ytaf-sponsorblock-segment-container {
   top: 0%;
   height: 100%;
@@ -129,11 +88,96 @@
 
 .ytaf-ui-watchControl-overlayMessage {
   position: fixed;
-  top: 35%;
+  top: 38%;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.8);
+  padding: 18px 32px;
+  border: 2px solid rgba(59, 130, 246, 0.6);
+  border-radius: 16px;
+  background: rgba(15, 20, 28, 0.92);
+  color: #e2e8f0;
+  font-family: 'YouTube Noto', Roboto, Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Notifications */
+.ctv-toasts {
+  position: fixed;
+  top: 5.5rem;
+  left: 50%;
+  z-index: 2147483001;
+  transform: translateX(-50%);
+  pointer-events: none;
+  text-align: center;
+}
+
+.ctv-toast {
+  display: inline-block;
+  clear: both;
+  margin: 0 0 12px;
+  padding: 14px 26px 14px 20px;
+  border: 1px solid #1e293b;
+  border-radius: 999px;
+  background: rgba(15, 20, 28, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  color: #f1f5f9;
+  font-family: 'YouTube Noto', Roboto, Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
+}
+
+/* Stack toasts vertically without flexbox gap. */
+.ctv-toasts .ctv-toast {
+  display: table;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ctv-toast-hidden {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
+.ctv-toast-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 14px;
+  border-radius: 50%;
+  background: #94a3b8;
+  vertical-align: middle;
+}
+
+.ctv-toast-text {
+  vertical-align: middle;
+}
+
+.ctv-toast-green .ctv-toast-dot {
+  background: #14b8a6;
+  box-shadow: 0 0 10px rgba(20, 184, 166, 0.8);
+}
+
+.ctv-toast-blue .ctv-toast-dot {
+  background: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+}
+
+.ctv-toast-red .ctv-toast-dot {
+  background: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+}
+
+.ctv-toast-yellow .ctv-toast-dot {
+  background: #eab308;
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.8);
 }
 
 /* ClearTube TV settings menu */
