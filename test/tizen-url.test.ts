@@ -23,6 +23,11 @@ describe('fixYouTubeUrl', () => {
       'https://api/lounge/bc/bind?device=LOUNGE_SCREEN',
       'https://www.youtube.com/api/lounge/bc/bind?device=LOUNGE_SCREEN'
     ],
+    [
+      'https://youtubei/v1/browse',
+      'https://www.youtube.com/youtubei/v1/browse'
+    ],
+    ['https://api', 'https://www.youtube.com/api'],
     ['/youtubei/v1/player', 'https://www.youtube.com/youtubei/v1/player'],
     ['s/player/base.js', 'https://www.youtube.com/s/player/base.js'],
     [
@@ -37,6 +42,8 @@ describe('fixYouTubeUrl', () => {
     'https://www.youtube.com/tv',
     'https://sponsor.ajay.app/api/skipSegments',
     'https://api.example.com/x',
+    'http://localhost:3000/proxy',
+    'http://192.168.1.20:3000/proxy?url=x',
     'file:///opt/usr/apps/x/res/wgt/index.html',
     'data:image/png;base64,AAAA',
     'blob:https://www.youtube.com/abc',

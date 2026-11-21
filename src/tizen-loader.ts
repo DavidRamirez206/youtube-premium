@@ -11,7 +11,12 @@ declare global {
 }
 
 import { getProxyIP, discoverProxyIP } from './proxy-config';
-import { buildLocalSearch, localAppBase, localAppUrl } from './tizen-url';
+import {
+  buildLocalSearch,
+  fixYouTubeUrl,
+  localAppBase,
+  localAppUrl
+} from './tizen-url';
 
 function showProxyError() {
   if ((window as any).proxyErrorShown) return;
@@ -84,6 +89,23 @@ function showProxyError() {
     }
   };
   inject();
+}
+
+function showProxyModeNotice() {
+  const timer = setInterval(() => {
+    if (!document.body) return;
+    clearInterval(timer);
+    const el = document.createElement('div');
+    el.style.cssText =
+      'position: fixed; bottom: 20px; right: 20px; background: rgba(30, 30, 30, 0.85); color: #aaa; padding: 8px 16px; border-radius: 8px; z-index: 2147483647; font-family: sans-serif; font-size: 13px; pointer-events: none; border: 1px solid rgba(255,255,255,0.08);';
+    el.innerText = 'Proxy mode active';
+    document.body.appendChild(el);
+    setTimeout(() => {
+      el.style.transition = 'opacity 0.6s';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 600);
+    }, 3000);
+  }, 500);
 }
 
 export async function runTizenLoader() {
@@ -202,192 +224,73 @@ export async function runTizenLoader() {
     }
   }
 
-  // 2. Monkey-patch fetch to intercept relative requests
+  // 2. Rewrite request URLs. YouTube builds broken URLs on file:// (empty
+  // location.host) and old Tizen versions route youtubei through a proxy.
+  const needsProxy = /Tizen [345]\./.test(navigator.userAgent);
+  const rewriteUrl = (raw: string): string => {
+    const url = fixYouTubeUrl(raw);
+    if (needsProxy && url.includes('/youtubei/')) {
+      return `http://${getProxyIP()}:3000/proxy?url=${encodeURIComponent(url)}`;
+    }
+    return url;
+  };
+
+  if (needsProxy) showProxyModeNotice();
+
   const originalFetch = window.fetch;
   window.fetch = function (
+    this: unknown,
     input: RequestInfo | URL,
     init?: RequestInit
   ): Promise<Response> {
-    let urlStr = '';
     if (typeof input === 'string') {
-      urlStr = input;
+      const url = rewriteUrl(input);
+      if (url !== input) logToDebug(`[FETCH-REDIR] ${input} -> ${url}`);
+      input = url;
     } else if (input instanceof URL) {
-      urlStr = input.toString();
-    } else if (input && typeof input === 'object' && 'url' in input) {
-      urlStr = (input as any).url;
-    }
-
-    // Fix malformed URLs caused by YouTube JS reading window.location.hostname on file://
-    if (urlStr.startsWith('https:///')) {
-      urlStr = urlStr.replace('https:///', 'https://www.youtube.com/');
-    }
-    if (urlStr.startsWith('http:///')) {
-      urlStr = urlStr.replace('http:///', 'http://www.youtube.com/');
-    }
-
-    // Fix URL-encoded malformed URLs appended to file://
-    if (urlStr.match(/^file:\/\/https(%3a|%3A)\/\/\//i)) {
-      urlStr = urlStr.replace(
-        /^file:\/\/https(%3a|%3A)\/\/\//i,
-        'https://www.youtube.com/'
-      );
-    }
-    if (urlStr.match(/^file:\/\/http(%3a|%3A)\/\/\//i)) {
-      urlStr = urlStr.replace(
-        /^file:\/\/http(%3a|%3A)\/\/\//i,
-        'http://www.youtube.com/'
-      );
-    }
-
-    if (
-      urlStr &&
-      !urlStr.startsWith('http://') &&
-      !urlStr.startsWith('https://') &&
-      !urlStr.startsWith('file://') &&
-      !urlStr.startsWith('data:')
-    ) {
-      const newUrl = new URL(urlStr, 'https://www.youtube.com');
-      logToDebug(`[FETCH-REDIR] ${urlStr} -> ${newUrl.toString()}`);
-      if (typeof input === 'string') {
-        input = newUrl.toString();
-      } else if (input instanceof URL) {
-        input = newUrl;
-      } else if (input && typeof input === 'object' && 'url' in input) {
-        (input as any).url = newUrl.toString();
-      }
-      urlStr = newUrl.toString();
-    }
-
-    // Inject Visitor ID and Auth Token to fix 403 on youtubei endpoints when cookies aren't sent
-    const isOldTizen =
-      navigator.userAgent.includes('Tizen 5.') ||
-      navigator.userAgent.includes('Tizen 4.') ||
-      navigator.userAgent.includes('Tizen 3.');
-    const needsProxy = isOldTizen;
-
-    if (needsProxy && !(window as any).ytaf_proxy_warned) {
-      (window as any).ytaf_proxy_warned = true;
-      const warnTimer = setInterval(() => {
-        if (document.body) {
-          clearInterval(warnTimer);
-          const warnDiv = document.createElement('div');
-          warnDiv.style.cssText =
-            'position: fixed; bottom: 20px; right: 20px; background: rgba(30, 30, 30, 0.85); color: #aaa; padding: 8px 16px; border-radius: 8px; z-index: 2147483647; font-family: sans-serif; font-size: 13px; pointer-events: none; border: 1px solid rgba(255,255,255,0.08);';
-          warnDiv.innerText = 'Proxy mode active';
-          document.body.appendChild(warnDiv);
-          setTimeout(() => {
-            warnDiv.style.transition = 'opacity 0.6s';
-            warnDiv.style.opacity = '0';
-            setTimeout(() => warnDiv.remove(), 600);
-          }, 3000);
-        }
-      }, 500);
-    }
-
-    if (urlStr && urlStr.includes('/youtubei/')) {
-      if (needsProxy) {
-        // PROXY the request through the PC to strip the Origin: file:// header
-        const targetUrl = encodeURIComponent(
-          urlStr.startsWith('http')
-            ? urlStr
-            : 'https://www.youtube.com' + urlStr
-        );
-        urlStr = `http://${getProxyIP()}:3000/proxy?url=${targetUrl}`;
-        logToDebug(`[PROXY-FETCH] ${urlStr}`);
+      input = new URL(rewriteUrl(input.toString()));
+    } else if (input instanceof Request) {
+      const url = rewriteUrl(input.url);
+      if (url !== input.url) {
+        logToDebug(`[FETCH-REDIR] ${input.url} -> ${url}`);
+        input = new Request(url, input);
       }
     }
-
     return originalFetch.call(this, input, init);
-  };
+  } as typeof window.fetch;
 
-  // 3. Monkey-patch XMLHttpRequest to intercept relative requests
+  // 3. Same rewrite for XMLHttpRequest
   const originalOpen = window.XMLHttpRequest.prototype.open;
   window.XMLHttpRequest.prototype.open = function (
+    this: XMLHttpRequest,
     method: string,
     url: string | URL,
-    async: boolean = true,
-    user?: string | null,
-    password?: string | null
+    ...rest: unknown[]
   ) {
-    let urlStr = typeof url === 'string' ? url : url.toString();
+    const raw = String(url);
+    const urlStr = rewriteUrl(raw);
+    if (urlStr !== raw) logToDebug(`[XHR-REDIR] ${method} ${raw} -> ${urlStr}`);
+    else logToDebug(`[XHR] ${method} ${urlStr}`);
 
-    // Fix malformed URLs caused by YouTube JS reading window.location.hostname on file://
-    if (urlStr.startsWith('https:///')) {
-      urlStr = urlStr.replace('https:///', 'https://www.youtube.com/');
-    }
-    if (urlStr.startsWith('http:///')) {
-      urlStr = urlStr.replace('http:///', 'http://www.youtube.com/');
-    }
-
-    // Fix URL-encoded malformed URLs appended to file://
-    if (urlStr.match(/^file:\/\/https(%3a|%3A)\/\/\//i)) {
-      urlStr = urlStr.replace(
-        /^file:\/\/https(%3a|%3A)\/\/\//i,
-        'https://www.youtube.com/'
-      );
-    }
-    if (urlStr.match(/^file:\/\/http(%3a|%3A)\/\/\//i)) {
-      urlStr = urlStr.replace(
-        /^file:\/\/http(%3a|%3A)\/\/\//i,
-        'http://www.youtube.com/'
-      );
-    }
-
-    if (
-      urlStr &&
-      !urlStr.startsWith('http://') &&
-      !urlStr.startsWith('https://') &&
-      !urlStr.startsWith('file://') &&
-      !urlStr.startsWith('data:')
-    ) {
-      const newUrl = new URL(urlStr, 'https://www.youtube.com');
-      logToDebug(`[XHR-REDIR] ${method} ${urlStr} -> ${newUrl.toString()}`);
-      url = newUrl.toString();
-    } else {
-      logToDebug(`[XHR] ${method} ${urlStr}`);
-      url = urlStr;
-    }
-
-    const isOldTizen =
-      navigator.userAgent.includes('Tizen 5.') ||
-      navigator.userAgent.includes('Tizen 4.') ||
-      navigator.userAgent.includes('Tizen 3.');
-    const needsProxy = isOldTizen;
-
-    // PROXY youtubei requests through PC to strip Origin: file:// header
-    if (needsProxy && urlStr && urlStr.includes('/youtubei/')) {
-      const targetUrl = encodeURIComponent(
-        urlStr.startsWith('http') ? urlStr : 'https://www.youtube.com' + urlStr
-      );
-      urlStr = `http://${getProxyIP()}:3000/proxy?url=${targetUrl}`;
-      url = urlStr;
-      logToDebug(`[PROXY-XHR] ${urlStr}`);
-    }
-
-    (this as any)._urlStr = urlStr;
-
-    (this as any)._urlStr = urlStr;
-
-    // Log failures
     this.addEventListener('load', () => {
       if (this.status >= 400) {
         logToDebug(`[XHR-FAIL] ${this.status} ${urlStr}`);
-        try {
-          if (this.responseText && this.responseText.length < 1000) {
-            logToDebug(`[XHR-FAIL-BODY] ${this.responseText}`);
-          }
-        } catch (e) {}
       }
     });
     this.addEventListener('error', () => {
       logToDebug(`[XHR-ERROR] ${urlStr}`);
-      if (needsProxy && urlStr && urlStr.includes(getProxyIP())) {
+      if (needsProxy && urlStr.includes(getProxyIP())) {
         showProxyError();
       }
     });
 
-    return originalOpen.call(this, method, url, async, user, password);
-  };
+    return (originalOpen as (...args: unknown[]) => void).call(
+      this,
+      method,
+      urlStr,
+      ...rest
+    );
+  } as typeof XMLHttpRequest.prototype.open;
 
   // 4. Monkey-patch Document.prototype.createElement to intercept relative script/image/video URLs
   const originalCreateElement = Document.prototype.createElement;

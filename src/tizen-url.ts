@@ -3,6 +3,8 @@
 
 export const YOUTUBE_ORIGIN = 'https://www.youtube.com';
 
+const SINGLE_LABEL_HOST = /^https?:\/\/([\w-]+)(?=[/?#]|$)/i;
+
 const PASSTHROUGH = /^(?:https?|file|data|blob):/i;
 
 /**
@@ -10,6 +12,7 @@ const PASSTHROUGH = /^(?:https?|file|data|blob):/i;
  *
  * YouTube derives hosts from `location.host`, which is empty on `file://`,
  * so it produces URLs such as `https:///youtubei/...`,
+ * `https://youtubei/...` (the same URL once parsed),
  * `https://api/lounge/...` or URL-encoded variants appended to `file://`.
  * Relative URLs are resolved against youtube.com.
  */
@@ -19,7 +22,12 @@ export function fixYouTubeUrl(url: string): string {
   let out = url
     .replace(/^(https?):\/\/\/+/i, `${YOUTUBE_ORIGIN}/`)
     .replace(/^file:\/\/https?%3a\/\/\//i, `${YOUTUBE_ORIGIN}/`)
-    .replace(/^https?:\/\/api\//i, `${YOUTUBE_ORIGIN}/api/`);
+    // After URL parsing, `https:///youtubei/x` becomes host `youtubei`, and
+    // `api/lounge` is built as `https://api/lounge`. Single-label hosts are
+    // never real servers here, so move the label back into the path.
+    .replace(SINGLE_LABEL_HOST, (_m, label: string) =>
+      label.toLowerCase() === 'localhost' ? _m : `${YOUTUBE_ORIGIN}/${label}`
+    );
 
   if (!PASSTHROUGH.test(out)) {
     out = new URL(out, `${YOUTUBE_ORIGIN}/`).toString();
