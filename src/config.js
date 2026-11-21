@@ -1,8 +1,24 @@
 const CONFIG_KEY = 'ytaf-configuration';
+const CONFIG_VERSION_KEY = 'ytaf-configuration-version';
+const CONFIG_VERSION = 2;
+
+/**
+ * Defaults changed in config version 2. Older releases saved every default
+ * they read, so a stored value equal to the old default is treated as
+ * untouched and dropped to pick up the new one.
+ */
+const V2_PREVIOUS_DEFAULTS = {
+  upgradeThumbnails: false,
+  forceHighResVideo: false,
+  removeEndscreen: false,
+  enableSponsorBlockIntro: true,
+  enableSponsorBlockOutro: true,
+  enableSponsorBlockMusicOfftopic: true
+};
 
 const configOptions = new Map([
   ['enableAdBlock', { default: true, desc: 'Enable ad blocking' }],
-  ['upgradeThumbnails', { default: false, desc: 'Upgrade thumbnail quality' }],
+  ['upgradeThumbnails', { default: true, desc: 'Upgrade thumbnail quality' }],
   [
     'removeShorts',
     { default: false, desc: 'Remove Shorts from subscriptions' }
@@ -12,8 +28,8 @@ const configOptions = new Map([
     'enableSponsorBlockSponsor',
     { default: true, desc: 'Skip sponsor segments' }
   ],
-  ['enableSponsorBlockIntro', { default: true, desc: 'Skip intro segments' }],
-  ['enableSponsorBlockOutro', { default: true, desc: 'Skip outro segments' }],
+  ['enableSponsorBlockIntro', { default: false, desc: 'Skip intro segments' }],
+  ['enableSponsorBlockOutro', { default: false, desc: 'Skip outro segments' }],
   [
     'enableSponsorBlockInteraction',
     {
@@ -31,7 +47,7 @@ const configOptions = new Map([
   [
     'enableSponsorBlockMusicOfftopic',
     {
-      default: true,
+      default: false,
       desc: 'Skip non-music segments in music videos'
     }
   ],
@@ -59,14 +75,14 @@ const configOptions = new Map([
   [
     'forceHighResVideo',
     {
-      default: false,
+      default: true,
       desc: 'Force max resolution video playback'
     }
   ],
   [
     'removeEndscreen',
     {
-      default: false,
+      default: true,
       desc: 'Remove end screens from video'
     }
   ],
@@ -122,7 +138,33 @@ function loadStoredConfig() {
  * new release reaches users who never touched that option.
  * @type {Record<string, unknown>}
  */
-const localConfig = loadStoredConfig();
+const localConfig = migrateConfig(loadStoredConfig());
+
+/**
+ * @param {Record<string, unknown>} stored
+ * @returns {Record<string, unknown>}
+ */
+function migrateConfig(stored) {
+  const version = Number(window.localStorage.getItem(CONFIG_VERSION_KEY)) || 1;
+  if (version >= CONFIG_VERSION) return stored;
+
+  let changed = false;
+  for (const [key, previous] of Object.entries(V2_PREVIOUS_DEFAULTS)) {
+    if (Object.hasOwn(stored, key) && stored[key] === previous) {
+      delete stored[key];
+      changed = true;
+    }
+  }
+
+  try {
+    if (changed)
+      window.localStorage.setItem(CONFIG_KEY, JSON.stringify(stored));
+    window.localStorage.setItem(CONFIG_VERSION_KEY, String(CONFIG_VERSION));
+  } catch (err) {
+    console.warn('Could not save migrated config:', err);
+  }
+  return stored;
+}
 
 function configExists(key) {
   return configOptions.has(key);

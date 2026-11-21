@@ -75,4 +75,61 @@ describe('config', () => {
     const { configRead } = await loadConfig();
     expect(configRead('enableAdBlock')).toBe(true);
   });
+
+  describe('defaults', () => {
+    it.each([
+      ['enableAdBlock', true],
+      ['enableSponsorBlock', true],
+      ['enableSponsorBlockSponsor', true],
+      ['enableSponsorBlockInteraction', true],
+      ['enableSponsorBlockSelfPromo', true],
+      ['upgradeThumbnails', true],
+      ['forceHighResVideo', true],
+      ['removeEndscreen', true],
+      ['enableSponsorBlockIntro', false],
+      ['enableSponsorBlockOutro', false],
+      ['enableSponsorBlockMusicOfftopic', false],
+      ['enableSponsorBlockPreview', false],
+      ['removeShorts', false],
+      ['hideLogo', false],
+      ['showWatch', false],
+      ['autoAccountSelect', false]
+    ])('%s defaults to %s', async (key, expected) => {
+      const { configRead } = await loadConfig();
+      expect(configRead(key)).toBe(expected);
+    });
+  });
+
+  describe('migration to version 2', () => {
+    it('drops stored values that equal the previous defaults', async () => {
+      window.localStorage.setItem(
+        CONFIG_KEY,
+        JSON.stringify({
+          enableAdBlock: true,
+          upgradeThumbnails: false,
+          enableSponsorBlockIntro: true,
+          hideLogo: true
+        })
+      );
+      const { configRead } = await loadConfig();
+      expect(configRead('upgradeThumbnails')).toBe(true);
+      expect(configRead('enableSponsorBlockIntro')).toBe(false);
+      expect(configRead('hideLogo')).toBe(true);
+      expect(JSON.parse(window.localStorage.getItem(CONFIG_KEY)!)).toEqual({
+        enableAdBlock: true,
+        hideLogo: true
+      });
+      expect(window.localStorage.getItem(`${CONFIG_KEY}-version`)).toBe('2');
+    });
+
+    it('keeps explicit choices made after migrating', async () => {
+      window.localStorage.setItem(`${CONFIG_KEY}-version`, '2');
+      window.localStorage.setItem(
+        CONFIG_KEY,
+        JSON.stringify({ upgradeThumbnails: false })
+      );
+      const { configRead } = await loadConfig();
+      expect(configRead('upgradeThumbnails')).toBe(false);
+    });
+  });
 });
