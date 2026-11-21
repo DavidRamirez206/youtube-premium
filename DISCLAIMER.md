@@ -27,9 +27,9 @@ By installing or using ClearTube TV you accept these terms.
 6. **Privacy.** ClearTube TV has no analytics and collects no personal data.
    Besides YouTube, it only contacts the optional services you enable, and
    only with what they need:
-   - [SponsorBlock](https://sponsor.ajay.app/), through the
-     `sponsorblock.inf.re` API mirror: the first characters of a hash of the
-     video ID.
+   - [SponsorBlock](https://sponsor.ajay.app/) (`sponsor.ajay.app`, or the
+     `sponsorblock.inf.re` mirror when it is unavailable): the first
+     characters of a hash of the video ID.
    - [DeArrow](https://dearrow.ajay.app/) (`sponsor.ajay.app` and
      `dearrow-thumb.ajay.app`, when enabled): the first characters of a
      hash of each listed video ID, and the ID of each video whose

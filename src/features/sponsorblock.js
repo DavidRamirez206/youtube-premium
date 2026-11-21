@@ -1,4 +1,5 @@
 import sha256 from 'tiny-sha256';
+import { guard } from '../core/safe';
 import { configRead } from '../core/config';
 import { showNotification } from '../ui/ui';
 
@@ -41,7 +42,103 @@ const barTypes = {
   }
 };
 
-const sponsorblockAPI = 'https://sponsorblock.inf.re/api';
+/** Official server first; the community mirror if it fails. */
+export const SPONSORBLOCK_APIS = [
+  'https://sponsor.ajay.app/api',
+  'https://sponsorblock.inf.re/api'
+];
+const REQUEST_TIMEOUT_MS = 5000;
+
+const CATEGORIES = [
+  'sponsor',
+  'intro',
+  'outro',
+  'interaction',
+  'selfpromo',
+  'music_offtopic',
+  'preview'
+];
+
+/**
+ * @template T
+ * @param {Promise<T>} promise
+ * @param {number} ms
+ * @returns {Promise<T>}
+ */
+function timeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('timed out')), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
+/**
+ * Valid segments of `videoID` from a hash-prefix API response. Anything
+ * malformed is dropped instead of breaking playback.
+ * @param {unknown} results
+ * @param {string} videoID
+ * @returns {{ segment: [number, number], category: string, skipped?: boolean }[]}
+ */
+export function parseSegments(results, videoID) {
+  if (!Array.isArray(results)) return [];
+  const entry = results.find((v) => v && v.videoID === videoID);
+  if (!entry || !Array.isArray(entry.segments)) return [];
+  return entry.segments.filter(
+    (seg) =>
+      seg &&
+      typeof seg.category === 'string' &&
+      Array.isArray(seg.segment) &&
+      seg.segment.length >= 2 &&
+      Number.isFinite(seg.segment[0]) &&
+      Number.isFinite(seg.segment[1]) &&
+      seg.segment[1] > seg.segment[0]
+  );
+}
+
+/**
+ * Fetches the segments of a video by hash prefix, trying each server in
+ * turn. A 404 means the prefix has no segments. Throws only when every
+ * server fails.
+ * @param {string} videoID
+ * @param {typeof fetch} fetchImpl
+ */
+export async function fetchSegments(videoID, fetchImpl = window.fetch) {
+  const videoHash = sha256(videoID).substring(0, 4);
+  const query = `categories=${encodeURIComponent(JSON.stringify(CATEGORIES))}`;
+  let lastError = null;
+
+  // Servers are tried one after another on purpose: the mirror is only a
+  // fallback.
+  /* eslint-disable no-await-in-loop */
+  for (const api of SPONSORBLOCK_APIS) {
+    try {
+      const resp = await timeout(
+        fetchImpl(`${api}/skipSegments/${videoHash}?${query}`),
+        REQUEST_TIMEOUT_MS
+      );
+      if (resp.status === 404) return [];
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return parseSegments(
+        await timeout(resp.json(), REQUEST_TIMEOUT_MS),
+        videoID
+      );
+    } catch (error) {
+      console.warn('[SponsorBlock]', api, 'failed:', error);
+      lastError = error;
+    }
+  }
+  /* eslint-enable no-await-in-loop */
+  throw lastError ?? new Error('no SponsorBlock server available');
+}
 
 class SponsorBlockHandler {
   video = null;
@@ -65,39 +162,34 @@ class SponsorBlockHandler {
   }
 
   async init() {
-    const videoHash = sha256(this.videoID).substring(0, 4);
-    const categories = [
-      'sponsor',
-      'intro',
-      'outro',
-      'interaction',
-      'selfpromo',
-      'music_offtopic',
-      'preview'
-    ];
-    const resp = await fetch(
-      `${sponsorblockAPI}/skipSegments/${videoHash}?categories=${encodeURIComponent(
-        JSON.stringify(categories)
-      )}`
-    );
-    const results = await resp.json();
+    let segments;
+    try {
+      segments = await fetchSegments(this.videoID);
+    } catch (error) {
+      console.warn(this.videoID, 'SponsorBlock unavailable:', error);
+      return;
+    }
 
-    const result = results.find((v) => v.videoID === this.videoID);
-    console.debug(this.videoID, 'Got it:', result);
+    // The user may have moved to another video while the request ran.
+    if (!this.active) return;
 
-    if (!result || !result.segments || !result.segments.length) {
+    if (!segments.length) {
       console.debug(this.videoID, 'No segments found.');
       return;
     }
 
-    this.segments = result.segments;
+    this.segments = segments;
     this.skippableCategories = this.getSkippableCategories();
 
-    this.scheduleSkipHandler = () => this.scheduleSkip();
-    this.durationChangeHandler = () => this.buildOverlay();
+    this.scheduleSkipHandler = guard('SponsorBlock skip', () =>
+      this.scheduleSkip()
+    );
+    this.durationChangeHandler = guard('SponsorBlock overlay', () =>
+      this.buildOverlay()
+    );
 
     this.attachVideo();
-    this.buildOverlay();
+    guard('SponsorBlock overlay', () => this.buildOverlay())();
   }
 
   getSkippableCategories() {
@@ -133,7 +225,10 @@ class SponsorBlockHandler {
     this.video = document.querySelector('video');
     if (!this.video) {
       console.debug(this.videoID, 'No video yet...');
-      this.attachVideoTimeout = setTimeout(() => this.attachVideo(), 100);
+      this.attachVideoTimeout = setTimeout(
+        guard('SponsorBlock attach', () => this.active && this.attachVideo()),
+        100
+      );
       return;
     }
 
@@ -189,31 +284,34 @@ class SponsorBlockHandler {
     const watchForSlider = () => {
       if (this.sliderInterval) clearInterval(this.sliderInterval);
 
-      this.sliderInterval = setInterval(() => {
-        const nodes = document.querySelectorAll('[idomkey=progress-bar]');
-        const last = nodes[nodes.length - 1];
-        switch (nodes.length) {
-          case 3: {
-            // Slider has chapter markers.
-            this.slider = last;
-            break;
+      this.sliderInterval = setInterval(
+        guard('SponsorBlock slider', () => {
+          const nodes = document.querySelectorAll('[idomkey=progress-bar]');
+          const last = nodes[nodes.length - 1];
+          switch (nodes.length) {
+            case 3: {
+              // Slider has chapter markers.
+              this.slider = last;
+              break;
+            }
+            case 2: {
+              // Slider has no markers or auto-markers
+              this.slider = last.querySelector('[idomkey=slider]');
+              break;
+            }
+            default: {
+              return; // no slider found yet
+            }
           }
-          case 2: {
-            // Slider has no markers or auto-markers
-            this.slider = last.querySelector('[idomkey=slider]');
-            break;
-          }
-          default: {
-            return; // no slider found yet
-          }
-        }
 
-        console.debug('slider found...', this.slider);
-        clearInterval(this.sliderInterval);
-        this.sliderInterval = null;
-        addSliderObserver(last);
-        addSliderOverlay();
-      }, 100);
+          console.debug('slider found...', this.slider);
+          clearInterval(this.sliderInterval);
+          this.sliderInterval = null;
+          addSliderObserver(last);
+          addSliderOverlay();
+        }),
+        100
+      );
     };
 
     this.sliderObserver = new MutationObserver((mutations) => {
@@ -254,9 +352,12 @@ class SponsorBlockHandler {
     // Sometimes timeupdate event (that calls scheduleSkip) gets fired right before
     // already scheduled skip routine below. Let's just look back a little bit
     // and, in worst case, perform a skip at negative interval (immediately)...
+    // Only segments of enabled categories, so a disabled one never delays
+    // the next skip.
     const nextSegments = this.segments.filter(
       (seg) =>
         !seg.skipped &&
+        this.skippableCategories.includes(seg.category) &&
         seg.segment[0] > this.video.currentTime - 0.3 &&
         seg.segment[1] > this.video.currentTime - 0.3
     );
@@ -278,8 +379,8 @@ class SponsorBlockHandler {
     );
 
     this.nextSkipTimeout = setTimeout(
-      () => {
-        if (this.video.paused) {
+      guard('SponsorBlock skip', () => {
+        if (!this.active || !this.video || this.video.paused) {
           console.debug(this.videoID, 'Currently paused, ignoring...');
           return;
         }
@@ -302,7 +403,7 @@ class SponsorBlockHandler {
 
         this.video.currentTime = end;
         this.scheduleSkip();
-      },
+      }),
       Math.max(0, (start - this.video.currentTime) * 1000)
     );
   }
@@ -371,7 +472,7 @@ function uninitializeSponsorblock() {
 
 window.addEventListener(
   'hashchange',
-  () => {
+  guard('SponsorBlock navigation', () => {
     const newURL = new URL(location.hash.substring(1), location.href);
     // uninitialize sponsorblock when not on `/watch` path, to prevent
     // it from attaching to playback preview video element loaded on
@@ -400,11 +501,13 @@ window.addEventListener(
 
       if (configRead('enableSponsorBlock')) {
         window.sponsorblock = new SponsorBlockHandler(videoID);
-        window.sponsorblock.init();
+        window.sponsorblock.init().catch((error) => {
+          console.warn('SponsorBlock failed to start:', error);
+        });
       } else {
         console.info('SponsorBlock disabled, not loading');
       }
     }
-  },
+  }),
   false
 );

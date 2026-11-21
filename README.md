@@ -218,12 +218,12 @@ Tizen 6.0 and later do not need it.
 ClearTube TV contains no analytics and does not collect personal data.
 Besides YouTube, the application only contacts the services you enable:
 
-| Service                                       | Data sent                                   | When                       |
-| --------------------------------------------- | ------------------------------------------- | -------------------------- |
-| SponsorBlock (`sponsorblock.inf.re` mirror)   | First characters of a hash of the video ID  | SponsorBlock enabled       |
-| DeArrow (`sponsor.ajay.app`)                  | First characters of a hash of each video ID | DeArrow enabled            |
-| DeArrow thumbnails (`dearrow-thumb.ajay.app`) | ID of each video with a community thumbnail | DeArrow thumbnails enabled |
-| Local proxy                                   | YouTube API requests                        | Tizen 5.5 and earlier only |
+| Service                                               | Data sent                                   | When                       |
+| ----------------------------------------------------- | ------------------------------------------- | -------------------------- |
+| SponsorBlock (`sponsor.ajay.app`, mirror as fallback) | First characters of a hash of the video ID  | SponsorBlock enabled       |
+| DeArrow (`sponsor.ajay.app`)                          | First characters of a hash of each video ID | DeArrow enabled            |
+| DeArrow thumbnails (`dearrow-thumb.ajay.app`)         | ID of each video with a community thumbnail | DeArrow thumbnails enabled |
+| Local proxy                                           | YouTube API requests                        | Tizen 5.5 and earlier only |
 
 See [DISCLAIMER.md](DISCLAIMER.md) for details.
 
