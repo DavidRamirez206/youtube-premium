@@ -175,5 +175,7 @@ import { configRead, configAddChangeListener } from './config';
 if (configRead('upgradeThumbnails')) enableObserver();
 
 configAddChangeListener('upgradeThumbnails', (evt) =>
-  evt.detail.newValue ? enableObserver() : obs.disconnect()
+  (evt as CustomEvent<{ newValue: boolean }>).detail.newValue
+    ? enableObserver()
+    : obs.disconnect()
 );

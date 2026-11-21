@@ -115,7 +115,7 @@ function buildSubnetIPs(deviceIP: string): string[] {
   const parts = deviceIP.split('.');
   if (parts.length !== 4) return [];
   const prefix = parts.slice(0, 3).join('.');
-  const self = parseInt(parts[3], 10);
+  const self = parseInt(parts[3] ?? '', 10);
   const ips: string[] = [];
   for (let i = 1; i <= 254; i++) {
     if (i !== self) {

@@ -38,7 +38,8 @@ function qualityRank(label: string) {
     auto: 1
   };
 
-  if (norm in baseRanks) return baseRanks[norm];
+  const base = baseRanks[norm];
+  if (base !== undefined) return base;
 
   const numeric = Number.parseInt(norm, 10);
   if (Number.isFinite(numeric)) return numeric;

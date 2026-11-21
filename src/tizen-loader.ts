@@ -93,7 +93,7 @@ export async function runTizenLoader() {
 
   window.ytaf_reloadApp = () => {
     console.info('[TizenLoader] Reloading app context...');
-    const localAppPath = window.location.href.split('#')[0];
+    const localAppPath = window.location.href.split('#')[0] ?? '';
     window.location.href = localAppPath;
   };
 
@@ -184,7 +184,9 @@ export async function runTizenLoader() {
 
           let cookies = cookieStore ? cookieStore.split('; ') : [];
           // Remove old cookie with same key
-          cookies = cookies.filter((c) => c.split('=')[0].trim() !== newKey);
+          cookies = cookies.filter(
+            (c) => (c.split('=')[0] ?? '').trim() !== newKey
+          );
           cookies.push(newCookie.trim());
 
           cookieStore = cookies.join('; ');
@@ -512,7 +514,7 @@ export async function runTizenLoader() {
       }
     }
     return element;
-  };
+  } as typeof Document.prototype.createElementNS;
 
   // 5. Tizen Remote Key Registration
   if (window.tizen && window.tizen.tvinputdevice) {
