@@ -16,81 +16,137 @@ const V2_PREVIOUS_DEFAULTS = {
   enableSponsorBlockMusicOfftopic: true
 };
 
+/**
+ * @typedef {'ads' | 'playback' | 'content' | 'interface'} ConfigSection
+ * @typedef {{ value: unknown, label: string }} ConfigChoice
+ * @typedef {{
+ *   default: unknown,
+ *   desc: string,
+ *   section: ConfigSection,
+ *   hint?: string,
+ *   choices?: ConfigChoice[]
+ * }} ConfigOption
+ */
+
+/** Menu sections, in display order. */
+export const configSections = /** @type {const} */ ([
+  ['ads', 'Ads and sponsors'],
+  ['playback', 'Playback'],
+  ['content', 'Content'],
+  ['interface', 'Interface']
+]);
+
+/** @type {Map<string, ConfigOption>} */
 const configOptions = new Map([
-  ['enableAdBlock', { default: true, desc: 'Enable ad blocking' }],
-  ['upgradeThumbnails', { default: true, desc: 'Upgrade thumbnail quality' }],
+  // Ads and sponsors
   [
-    'removeShorts',
-    { default: false, desc: 'Remove Shorts from subscriptions' }
+    'enableAdBlock',
+    {
+      default: true,
+      section: 'ads',
+      desc: 'Block ads',
+      hint: 'Video ads, home banners and sponsored tiles'
+    }
   ],
-  ['enableSponsorBlock', { default: true, desc: 'Enable SponsorBlock' }],
+  [
+    'enableSponsorBlock',
+    {
+      default: true,
+      section: 'ads',
+      desc: 'SponsorBlock',
+      hint: 'Skip segments reported by the community (sponsor.ajay.app)'
+    }
+  ],
   [
     'enableSponsorBlockSponsor',
-    { default: true, desc: 'Skip sponsor segments' }
+    { default: true, section: 'ads', desc: 'Skip sponsor segments' }
   ],
-  ['enableSponsorBlockIntro', { default: false, desc: 'Skip intro segments' }],
-  ['enableSponsorBlockOutro', { default: false, desc: 'Skip outro segments' }],
   [
     'enableSponsorBlockInteraction',
     {
       default: true,
-      desc: 'Skip interaction reminder segments'
+      section: 'ads',
+      desc: 'Skip interaction reminders',
+      hint: '"Like and subscribe" requests'
     }
   ],
   [
     'enableSponsorBlockSelfPromo',
-    {
-      default: true,
-      desc: 'Skip self promotion segments'
-    }
+    { default: true, section: 'ads', desc: 'Skip self-promotion' }
+  ],
+  [
+    'enableSponsorBlockIntro',
+    { default: false, section: 'ads', desc: 'Skip intros' }
+  ],
+  [
+    'enableSponsorBlockOutro',
+    { default: false, section: 'ads', desc: 'Skip outros and credits' }
   ],
   [
     'enableSponsorBlockMusicOfftopic',
     {
       default: false,
-      desc: 'Skip non-music segments in music videos'
+      section: 'ads',
+      desc: 'Skip non-music parts of music videos'
     }
   ],
   [
     'enableSponsorBlockPreview',
-    {
-      default: false,
-      desc: 'Skip recaps and previews'
-    }
+    { default: false, section: 'ads', desc: 'Skip recaps and previews' }
   ],
-  [
-    'hideLogo',
-    {
-      default: false,
-      desc: 'Hide YouTube logo'
-    }
-  ],
-  [
-    'showWatch',
-    {
-      default: false,
-      desc: 'Display time in UI'
-    }
-  ],
+
+  // Playback
   [
     'forceHighResVideo',
     {
       default: true,
-      desc: 'Force max resolution video playback'
+      section: 'playback',
+      desc: 'Maximum video quality',
+      hint: 'Select the highest resolution available'
     }
   ],
   [
     'removeEndscreen',
     {
       default: true,
-      desc: 'Remove end screens from video'
+      section: 'playback',
+      desc: 'Remove end screens',
+      hint: 'Cards that cover the last seconds of a video'
     }
   ],
+
+  // Content
+  [
+    'removeShorts',
+    {
+      default: false,
+      section: 'content',
+      desc: 'Hide Shorts',
+      hint: 'In the subscriptions feed'
+    }
+  ],
+  [
+    'upgradeThumbnails',
+    {
+      default: true,
+      section: 'content',
+      desc: 'High-quality thumbnails'
+    }
+  ],
+
+  // Interface
+  [
+    'hideLogo',
+    { default: false, section: 'interface', desc: 'Hide the YouTube logo' }
+  ],
+  ['showWatch', { default: false, section: 'interface', desc: 'Show clock' }],
   [
     'autoAccountSelect',
     {
       default: false,
-      desc: 'Bypass initial account selection on startup'
+      section: 'interface',
+      desc: 'Skip account selection',
+      hint: 'Bypass "Who\'s watching?" on start-up'
     }
   ]
 ]);
@@ -170,6 +226,37 @@ function configExists(key) {
   return configOptions.has(key);
 }
 
+/**
+ * @param {string} key
+ * @returns {ConfigOption}
+ */
+export function configGetOption(key) {
+  const option = configOptions.get(key);
+  if (!option) {
+    throw new Error('tried to get unknown config key: ' + key);
+  }
+  return option;
+}
+
+/** @returns {string[]} All option keys, in menu order. */
+export function configKeys() {
+  return [...configOptions.keys()];
+}
+
+/**
+ * Whether `value` is valid for `key`: one of its choices, or a value of the
+ * same type as its default.
+ * @param {string} key
+ * @param {unknown} value
+ */
+export function configIsValid(key, value) {
+  const option = configGetOption(key);
+  if (option.choices) {
+    return option.choices.some((c) => c.value === value);
+  }
+  return typeof value === typeof option.default;
+}
+
 export function configGetDesc(key) {
   if (!configExists(key)) {
     throw new Error('tried to get desc for unknown config key: ' + key);
@@ -183,14 +270,19 @@ export function configRead(key) {
     throw new Error('tried to read unknown config key: ' + key);
   }
 
-  return Object.hasOwn(localConfig, key)
-    ? localConfig[key]
-    : defaultConfig[key];
+  if (Object.hasOwn(localConfig, key) && configIsValid(key, localConfig[key])) {
+    return localConfig[key];
+  }
+  return defaultConfig[key];
 }
 
 export function configWrite(key, value) {
   if (!configExists(key)) {
     throw new Error('tried to write unknown config key: ' + key);
+  }
+
+  if (!configIsValid(key, value)) {
+    throw new Error(`invalid value for config key ${key}: ${String(value)}`);
   }
 
   const oldValue = configRead(key);

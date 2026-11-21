@@ -132,4 +132,36 @@ describe('config', () => {
       expect(configRead('upgradeThumbnails')).toBe(false);
     });
   });
+
+  describe('schema', () => {
+    it('assigns every option to a known section', async () => {
+      const { configKeys, configGetOption, configSections } =
+        await loadConfig();
+      const sections = configSections.map(([id]) => id);
+      for (const key of configKeys()) {
+        expect(sections).toContain(configGetOption(key).section);
+      }
+    });
+
+    it('keeps every default valid', async () => {
+      const { configKeys, configIsValid, configRead } = await loadConfig();
+      for (const key of configKeys()) {
+        expect(configIsValid(key, configRead(key))).toBe(true);
+      }
+    });
+
+    it('rejects values of the wrong type', async () => {
+      const { configWrite } = await loadConfig();
+      expect(() => configWrite('enableAdBlock', 'yes')).toThrow(/invalid/);
+    });
+
+    it('ignores stored values of the wrong type', async () => {
+      window.localStorage.setItem(
+        CONFIG_KEY,
+        JSON.stringify({ enableAdBlock: 'no' })
+      );
+      const { configRead } = await loadConfig();
+      expect(configRead('enableAdBlock')).toBe(true);
+    });
+  });
 });
