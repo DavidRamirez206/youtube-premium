@@ -11,7 +11,8 @@ import { basename } from 'node:path';
  */
 function transformAppInfo(input) {
   const appInfo = JSON.parse(input.toString());
-  appInfo.version = pkgJson.version;
+  // webOS only accepts x.y.z: drop pre-release and build suffixes.
+  appInfo.version = pkgJson.version.replace(/[-+].*$/, '');
   return JSON.stringify(appInfo, null, 2);
 }
 
