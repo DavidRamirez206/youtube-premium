@@ -27,8 +27,7 @@ function walk(dir) {
   });
 }
 
-const output =
-  process.argv[2] ?? `YouTubeAdFree_${pkgJson.version}_unsigned.wgt`;
+const output = process.argv[2] ?? `ClearTubeTV_${pkgJson.version}_unsigned.wgt`;
 
 /** @type {Record<string, Uint8Array>} */
 const files = {};

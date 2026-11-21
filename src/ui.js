@@ -125,7 +125,7 @@ function createOptionsPanel() {
   `;
 
   const title = document.createElement('div');
-  title.textContent = `YouTube AdFree Settings  v${__YTAF_VERSION__}`;
+  title.textContent = `ClearTube TV  v${__YTAF_VERSION__}`;
   title.style.cssText =
     'font-size: 34px; font-weight: 700; margin-bottom: 12px;';
   panel.appendChild(title);

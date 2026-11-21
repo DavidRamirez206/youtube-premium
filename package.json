@@ -1,7 +1,7 @@
 {
-  "name": "youtube-webos",
+  "name": "cleartube-tv",
   "version": "0.5.3",
-  "description": "Ad-free YouTube app for webOS",
+  "description": "Unofficial ad-free client for YouTube on Samsung Tizen and LG webOS TVs. Not affiliated with Google or Samsung.",
   "type": "module",
   "main": "index.js",
   "packageManager": "pnpm@10.33.0",
@@ -26,10 +26,10 @@
     "lint:prettier": "prettier --check .",
     "lint:all": "pnpm run \"/^lint:(?!all)/\""
   },
-  "repository": "github:webosbrew/youtube-webos",
+  "repository": "github:DavidRamirez206/youtube-tizenos",
   "license": "GPL-3.0-only",
-  "bugs": "https://github.com/webosbrew/youtube-webos/issues",
-  "homepage": "https://github.com/webosbrew/youtube-webos#readme",
+  "bugs": "https://github.com/DavidRamirez206/youtube-tizenos/issues",
+  "homepage": "https://github.com/DavidRamirez206/youtube-tizenos#readme",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.29.2",
     "core-js-pure": "^3.49.0",
