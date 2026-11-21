@@ -3,6 +3,7 @@
  * the entire screen, the screensaver can be kick in.
  */
 
+import { onBodyReady } from '../core/dom';
 import { requireElement } from '../player_api/helpers';
 
 function isPlayerHidden(video: HTMLVideoElement) {
@@ -54,7 +55,9 @@ const bodyAttrObs = new MutationObserver(async () => {
   });
 });
 
-bodyAttrObs.observe(document.body, {
-  attributes: true,
-  attributeFilter: ['class']
-});
+onBodyReady((body) =>
+  bodyAttrObs.observe(body, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
+);
