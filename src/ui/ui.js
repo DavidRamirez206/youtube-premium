@@ -403,9 +403,32 @@ function toggleInspector() {
   });
 }
 
+/**
+ * Key codes whose keyup (and keypress) must not reach YouTube because their
+ * keydown was consumed by us. Without this, Back closes the menu on keydown
+ * and YouTube handles the keyup as "back" too, which exits the app.
+ * @type {Set<number>}
+ */
+const consumedKeys = new Set();
+
+/** @param {KeyboardEvent} evt */
+function swallowKey(evt) {
+  const keyCode = evt.keyCode || evt.which;
+  if (evt.type === 'keydown') consumedKeys.add(keyCode);
+  else if (evt.type === 'keyup') consumedKeys.delete(keyCode);
+  evt.preventDefault();
+  evt.stopPropagation();
+  evt.stopImmediatePropagation();
+  return false;
+}
+
 const eventHandler = (evt) => {
   const keyCode = evt.keyCode || evt.which;
   const keyColor = getKeyColor(evt);
+
+  if (evt.type !== 'keydown' && consumedKeys.has(keyCode)) {
+    return swallowKey(evt);
+  }
 
   if (optionsPanelVisible) {
     // If options panel is open, hijack keys to prevent YouTube from reacting
@@ -413,23 +436,17 @@ const eventHandler = (evt) => {
       if (evt.type === 'keydown') {
         showOptionsPanel(false);
       }
-      evt.preventDefault();
-      evt.stopPropagation();
-      return false;
+      return swallowKey(evt);
     }
 
     if (evt.type === 'keydown' && keyCode === 38) {
       moveSelectedOption(-1);
-      evt.preventDefault();
-      evt.stopPropagation();
-      return false;
+      return swallowKey(evt);
     }
 
     if (evt.type === 'keydown' && keyCode === 40) {
       moveSelectedOption(1);
-      evt.preventDefault();
-      evt.stopPropagation();
-      return false;
+      return swallowKey(evt);
     }
 
     if (
@@ -437,9 +454,7 @@ const eventHandler = (evt) => {
       (keyCode === 13 || keyCode === 32 || keyCode === 37 || keyCode === 39)
     ) {
       toggleSelectedOption();
-      evt.preventDefault();
-      evt.stopPropagation();
-      return false;
+      return swallowKey(evt);
     }
 
     if (keyCode === 27 || keyCode === 10009) {
@@ -447,15 +462,11 @@ const eventHandler = (evt) => {
       if (evt.type === 'keydown') {
         showOptionsPanel(false);
       }
-      evt.preventDefault();
-      evt.stopPropagation();
-      return false;
+      return swallowKey(evt);
     }
 
     // Block all other keys in capturing phase when panel is open
-    evt.preventDefault();
-    evt.stopPropagation();
-    return false;
+    return swallowKey(evt);
   }
 
   // Normal mode
@@ -463,9 +474,7 @@ const eventHandler = (evt) => {
     if (evt.type === 'keydown') {
       showOptionsPanel(!optionsPanelVisible);
     }
-    evt.preventDefault();
-    evt.stopPropagation();
-    return false;
+    return swallowKey(evt);
   } else if (keyColor === 'red') {
     if (evt.type === 'keydown') {
       const consoleElm = document.getElementById('ytaf-debug-console');
@@ -479,30 +488,26 @@ const eventHandler = (evt) => {
         }
       }
     }
-    evt.preventDefault();
-    evt.stopPropagation();
-    return false;
+    return swallowKey(evt);
   } else if (keyColor === 'blue') {
     if (evt.type === 'keydown') {
       initAudioOnlyToggle();
     }
-    evt.preventDefault();
-    evt.stopPropagation();
-    return false;
+    return swallowKey(evt);
   } else if (keyColor === 'yellow') {
     if (evt.type === 'keydown') {
       toggleInspector();
     }
-    evt.preventDefault();
-    evt.stopPropagation();
-    return false;
+    return swallowKey(evt);
   }
   return true;
 };
 
-document.addEventListener('keydown', eventHandler, true);
-document.addEventListener('keypress', eventHandler, true);
-document.addEventListener('keyup', eventHandler, true);
+// Listen on window in the capture phase so we run before YouTube's own key
+// handlers (this script is injected before YouTube's scripts).
+window.addEventListener('keydown', eventHandler, true);
+window.addEventListener('keypress', eventHandler, true);
+window.addEventListener('keyup', eventHandler, true);
 
 const COLOR_MAP = {
   red: 'rgba(255, 0, 0, 0.9)',
