@@ -14,7 +14,13 @@ import { zipSync } from 'fflate';
 import pkgJson from '../package.json' with { type: 'json' };
 
 const DIST = 'dist';
-const EXCLUDE = [/\.map$/, /\.LICENSE\.txt$/, /^tizen\//, /^appinfo\.json$/];
+const EXCLUDE = [
+  /\.map$/,
+  /\.LICENSE\.txt$/,
+  /^tizen\//,
+  /^brand\//,
+  /^appinfo\.json$/
+];
 
 /**
  * @param {string} dir
