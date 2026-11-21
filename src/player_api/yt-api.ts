@@ -78,4 +78,10 @@ export interface YTPlayer extends HTMLElement {
   isInline(): boolean;
 
   getVideoStats(): VideoStats;
+
+  /** Optional: not every YouTube TV build exposes these. */
+  setPlaybackRate?(rate: number): void;
+  getPlaybackRate?(): number;
+  stopVideo?(): void;
+  pauseVideo?(): void;
 }

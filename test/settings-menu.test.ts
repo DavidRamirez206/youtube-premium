@@ -88,4 +88,27 @@ describe('settings menu', () => {
     for (let i = 0; i < 50; i++) menu.down();
     expect(menu.selectedKey).toBe('autoAccountSelect');
   });
+
+  it('changes choice options with LEFT and RIGHT without wrapping', async () => {
+    const { menu, config } = await setup();
+    while (menu.selectedKey !== 'playbackSpeed') menu.down();
+    menu.right();
+    expect(config.configRead('playbackSpeed')).toBe(1.1);
+    menu.left();
+    menu.left();
+    menu.left();
+    expect(config.configRead('playbackSpeed')).toBe(0.75);
+    const value = document.querySelector(
+      '[data-key="playbackSpeed"] [data-role="value"]'
+    )!;
+    expect(value.textContent).toBe('0.75x');
+    expect(menu.close()).toBe(false);
+  });
+
+  it('cycles choice options with OK', async () => {
+    const { menu, config } = await setup();
+    while (menu.selectedKey !== 'playbackSpeed') menu.down();
+    for (let i = 0; i < 6; i++) menu.activate();
+    expect(config.configRead('playbackSpeed')).toBe(0.75);
+  });
 });

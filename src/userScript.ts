@@ -51,6 +51,7 @@ import './features/screensaver-fix';
 import './styles/yt-fixes.css';
 import './features/watch.js';
 import './features/video-quality';
+import './features/playback-speed';
 import './features/lang-settings-fix';
 import './features/remove-endscreen';
 import './hooks';

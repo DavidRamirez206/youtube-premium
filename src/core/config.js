@@ -43,6 +43,11 @@ export const configSections = /** @type {const} */ ([
   ['interface', 'Interface']
 ]);
 
+const SPEED_CHOICES = [0.75, 1, 1.1, 1.25, 1.5, 1.75, 2].map((value) => ({
+  value,
+  label: `${value}x`
+}));
+
 /** @type {Map<string, ConfigOption>} */
 const configOptions = new Map([
   // Ads and sponsors
@@ -137,6 +142,17 @@ const configOptions = new Map([
       section: 'playback',
       desc: 'Maximum video quality',
       hint: 'Select the highest resolution available'
+    }
+  ],
+  [
+    'playbackSpeed',
+    {
+      default: 1,
+      section: 'playback',
+      desc: 'Default playback speed',
+      hint: 'Applied when a video starts. Use LEFT/RIGHT to change it.',
+      choices: SPEED_CHOICES,
+      live: true
     }
   ],
   [
