@@ -22,9 +22,25 @@ interface EventMap {
   response: CustomEvent<Response>;
 }
 
+/**
+ * Runs before a response is handed to the page. It must not consume the
+ * response body (use `response.clone()`); errors are ignored.
+ */
+export type ResponseWaiter = (url: URL, response: Response) => Promise<void>;
+
 export class FetchRegistry extends CustomEventTarget<EventMap> {
   #originalFetch: typeof fetch;
   #fetchCount = 0;
+  #waiters = new Set<ResponseWaiter>();
+
+  /**
+   * Delays responses until `waiter` settles, e.g. to prefetch data needed
+   * when the page parses them. Returns a function that removes it.
+   */
+  waitBeforeResponse(waiter: ResponseWaiter) {
+    this.#waiters.add(waiter);
+    return () => this.#waiters.delete(waiter);
+  }
 
   private constructor() {
     super();
@@ -109,6 +125,16 @@ export class FetchRegistry extends CustomEventTarget<EventMap> {
     }
 
     this.#fetchCount++;
+
+    if (this.#waiters.size) {
+      await Promise.all(
+        [...this.#waiters].map((waiter) =>
+          waiter(url, res).catch((e: unknown) =>
+            console.warn('[fetch] response waiter failed', e)
+          )
+        )
+      );
+    }
 
     return res;
   };
