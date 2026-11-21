@@ -1,14 +1,9 @@
-/*global navigate, __YTAF_VERSION__*/
 import '../polyfills/spatial-navigation-polyfill.js';
-import {
-  configAddChangeListener,
-  configRead,
-  configWrite,
-  configGetDesc
-} from '../core/config.js';
+import { configAddChangeListener, configRead } from '../core/config.js';
 import './ui.css';
 import { requireElement } from '../player_api/helpers';
-import { computeListOffset } from './menu-scroll.js';
+import { createSettingsMenu } from './settings-menu.js';
+import { onBodyReady } from '../core/dom';
 
 // We handle key events ourselves.
 window.__spatialNavigation__.keyMode = 'NONE';
@@ -66,230 +61,18 @@ function getKeyColor(evt) {
   return null;
 }
 
-const TIZEN_SETTINGS_KEYS = [
-  'enableAdBlock',
-  'upgradeThumbnails',
-  'hideLogo',
-  'showWatch',
-  'removeShorts',
-  'forceHighResVideo',
-  'removeEndscreen',
-  'autoAccountSelect',
-  'enableSponsorBlock',
-  'enableSponsorBlockSponsor',
-  'enableSponsorBlockIntro',
-  'enableSponsorBlockOutro',
-  'enableSponsorBlockInteraction',
-  'enableSponsorBlockSelfPromo',
-  'enableSponsorBlockMusicOfftopic',
-  'enableSponsorBlockPreview'
-];
-
-// These keys are wired for live updates without requiring a full app reload.
-const HOT_APPLY_SETTINGS_KEYS = new Set(['hideLogo']);
-
-let optionsPanelVisible = false;
-let optionsSelectedIndex = 0;
-let optionsRequireReload = false;
-const optionRows = [];
-
-function createOptionsPanel() {
-  const overlay = document.createElement('div');
-  overlay.id = 'ytaf-options-overlay';
-  overlay.style.cssText = `
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.65);
-    z-index: 2147483647;
-    pointer-events: auto;
-    font-family: sans-serif;
-  `;
-
-  const panel = document.createElement('div');
-  panel.id = 'ytaf-options-panel';
-  panel.style.cssText = `
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: min(1100px, 92vw);
-    height: min(85vh, 900px);
-    transform: translate(-50%, -50%);
-    background: #111;
-    color: #fff;
-    border: 2px solid #00b050;
-    border-radius: 14px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
-    padding: 24px;
-    box-sizing: border-box;
-    overflow: hidden;
-  `;
-
-  const title = document.createElement('div');
-  title.textContent = `ClearTube TV  v${__YTAF_VERSION__}`;
-  title.style.cssText =
-    'position: relative; z-index: 1; background: #111; font-size: 34px; font-weight: 700; margin-bottom: 12px;';
-  panel.appendChild(title);
-
-  const hint = document.createElement('div');
-  hint.textContent = 'Use UP/DOWN to select, OK to toggle, GREEN/BACK to close';
-  hint.style.cssText =
-    'position: relative; z-index: 1; background: #111; font-size: 18px; color: #9ad9ab; padding-bottom: 16px;';
-  panel.appendChild(hint);
-
-  const list = document.createElement('div');
-  list.dataset.role = 'list';
-  list.style.cssText =
-    'display: flex; flex-direction: column; gap: 10px; transition: transform 0.12s ease-out;';
-
-  TIZEN_SETTINGS_KEYS.forEach((key) => {
-    const row = document.createElement('div');
-    row.dataset.key = key;
-    row.style.cssText = `
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 2px solid #333;
-      background: #1a1a1a;
-      font-size: 21px;
-    `;
-
-    const label = document.createElement('span');
-    label.textContent = configGetDesc(key);
-    label.style.cssText = 'padding-right: 12px;';
-
-    const value = document.createElement('span');
-    value.dataset.role = 'value';
-    value.style.cssText =
-      'font-weight: 700; min-width: 80px; text-align: right;';
-
-    row.appendChild(label);
-    row.appendChild(value);
-    list.appendChild(row);
-    optionRows.push(row);
-
-    configAddChangeListener(key, () => {
-      const valElm = row.querySelector('[data-role="value"]');
-      const enabled = Boolean(configRead(key));
-      if (valElm) {
-        valElm.textContent = enabled ? 'ON' : 'OFF';
-        valElm.style.color = enabled ? '#4dff7a' : '#ff6c6c';
-      }
-    });
-  });
-
-  panel.appendChild(list);
-  overlay.appendChild(panel);
-  return overlay;
-}
-
-const optionsPanel = createOptionsPanel();
-
-function ensureOptionsPanelMounted() {
-  if (!document.body) return false;
-
-  if (optionsPanel.parentElement !== document.body) {
-    document.body.appendChild(optionsPanel);
-  }
-
-  return true;
-}
-
-function renderOptionsPanel() {
-  optionRows.forEach((row, idx) => {
-    const key = row.dataset.key;
-    const enabled = Boolean(configRead(key));
-    const valueElm = row.querySelector('[data-role="value"]');
-
-    if (valueElm) {
-      valueElm.textContent = enabled ? 'ON' : 'OFF';
-      valueElm.style.color = enabled ? '#4dff7a' : '#ff6c6c';
-    }
-
-    const selected = idx === optionsSelectedIndex;
-    row.style.borderColor = selected ? '#ffffff' : '#333';
-    row.style.background = selected ? '#2a3f2d' : '#1a1a1a';
-  });
-}
-
-function moveSelectedOption(delta) {
-  const max = optionRows.length - 1;
-  optionsSelectedIndex = Math.max(
-    0,
-    Math.min(max, optionsSelectedIndex + delta)
-  );
-  renderOptionsPanel();
-
-  scrollToSelectedOption();
-}
-
-let listOffset = 0;
-
-/** Keeps the selected row visible. See menu-scroll.js for why not scrollTop. */
-function scrollToSelectedOption() {
-  const row = optionRows[optionsSelectedIndex];
-  const list = row?.parentElement;
-  const panel = list?.parentElement;
-  if (!row || !list || !panel) return;
-
-  listOffset = computeListOffset({
-    offset: listOffset,
-    rowTop: row.offsetTop - list.offsetTop,
-    rowHeight: row.offsetHeight,
-    listTop: list.offsetTop,
-    viewportHeight: panel.clientHeight
-  });
-  list.style.transform = `translateY(-${listOffset}px)`;
-}
-
-function toggleSelectedOption() {
-  const selectedRow = optionRows[optionsSelectedIndex];
-  if (!selectedRow) return;
-
-  const key = selectedRow.dataset.key;
-  const nextValue = !configRead(key);
-  configWrite(key, nextValue);
-
-  if (!HOT_APPLY_SETTINGS_KEYS.has(key)) {
-    optionsRequireReload = true;
-  }
-
-  if (key === 'hideLogo' && configRead('showWatch')) {
-    optionsRequireReload = true;
-  }
-
-  renderOptionsPanel();
-}
-
-if (!ensureOptionsPanelMounted()) {
-  document.addEventListener('DOMContentLoaded', ensureOptionsPanelMounted);
-  const mountTimer = setInterval(() => {
-    if (ensureOptionsPanelMounted()) {
-      clearInterval(mountTimer);
-    }
-  }, 100);
-}
+const settingsMenu = createSettingsMenu();
+onBodyReady((body) => body.appendChild(settingsMenu.element));
 
 function showOptionsPanel(visible) {
   visible ??= true;
 
-  if (visible && !optionsPanelVisible) {
-    ensureOptionsPanelMounted();
-    document.body.appendChild(optionsPanel);
-    optionsPanel.style.setProperty('display', 'block', 'important');
-    optionsSelectedIndex = 0;
-    optionsRequireReload = false;
-    listOffset = 0;
-    renderOptionsPanel();
-    scrollToSelectedOption();
-    optionsPanelVisible = true;
-  } else if (!visible && optionsPanelVisible) {
-    optionsPanel.style.setProperty('display', 'none', 'important');
-    optionsPanelVisible = false;
-
-    if (optionsRequireReload) {
+  if (visible && !settingsMenu.isOpen()) {
+    // Keep the menu above anything YouTube added since it was mounted.
+    document.body.appendChild(settingsMenu.element);
+    settingsMenu.open();
+  } else if (!visible && settingsMenu.isOpen()) {
+    if (settingsMenu.close()) {
       showNotification('Applying settings...', 1200, 'green');
       setTimeout(() => {
         if (window.ytaf_reloadApp) {
@@ -430,49 +213,30 @@ const eventHandler = (evt) => {
     return swallowKey(evt);
   }
 
-  if (optionsPanelVisible) {
-    // If options panel is open, hijack keys to prevent YouTube from reacting
-    if (keyColor === 'green') {
-      if (evt.type === 'keydown') {
+  if (settingsMenu.isOpen()) {
+    // While the menu is open, every key belongs to it.
+    if (evt.type === 'keydown') {
+      if (keyColor === 'green' || keyCode === 27 || keyCode === 10009) {
         showOptionsPanel(false);
+      } else if (keyCode === 38) {
+        settingsMenu.up();
+      } else if (keyCode === 40) {
+        settingsMenu.down();
+      } else if (keyCode === 13 || keyCode === 32) {
+        settingsMenu.activate();
+      } else if (keyCode === 37) {
+        settingsMenu.left();
+      } else if (keyCode === 39) {
+        settingsMenu.right();
       }
-      return swallowKey(evt);
     }
-
-    if (evt.type === 'keydown' && keyCode === 38) {
-      moveSelectedOption(-1);
-      return swallowKey(evt);
-    }
-
-    if (evt.type === 'keydown' && keyCode === 40) {
-      moveSelectedOption(1);
-      return swallowKey(evt);
-    }
-
-    if (
-      evt.type === 'keydown' &&
-      (keyCode === 13 || keyCode === 32 || keyCode === 37 || keyCode === 39)
-    ) {
-      toggleSelectedOption();
-      return swallowKey(evt);
-    }
-
-    if (keyCode === 27 || keyCode === 10009) {
-      // Escape / Back / Return
-      if (evt.type === 'keydown') {
-        showOptionsPanel(false);
-      }
-      return swallowKey(evt);
-    }
-
-    // Block all other keys in capturing phase when panel is open
     return swallowKey(evt);
   }
 
   // Normal mode
   if (keyColor === 'green') {
     if (evt.type === 'keydown') {
-      showOptionsPanel(!optionsPanelVisible);
+      showOptionsPanel(!settingsMenu.isOpen());
     }
     return swallowKey(evt);
   } else if (keyColor === 'red') {

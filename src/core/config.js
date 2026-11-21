@@ -24,8 +24,15 @@ const V2_PREVIOUS_DEFAULTS = {
  *   desc: string,
  *   section: ConfigSection,
  *   hint?: string,
- *   choices?: ConfigChoice[]
+ *   choices?: ConfigChoice[],
+ *   requires?: string,
+ *   live?: boolean
  * }} ConfigOption
+
+ *
+ * `requires` names a switch that must be on for the option to have any
+ * effect. `live` options are applied immediately; the others need the app to
+ * reload, which the settings menu does when it closes.
  */
 
 /** Menu sections, in display order. */
@@ -59,11 +66,17 @@ const configOptions = new Map([
   ],
   [
     'enableSponsorBlockSponsor',
-    { default: true, section: 'ads', desc: 'Skip sponsor segments' }
+    {
+      requires: 'enableSponsorBlock',
+      default: true,
+      section: 'ads',
+      desc: 'Skip sponsor segments'
+    }
   ],
   [
     'enableSponsorBlockInteraction',
     {
+      requires: 'enableSponsorBlock',
       default: true,
       section: 'ads',
       desc: 'Skip interaction reminders',
@@ -72,19 +85,35 @@ const configOptions = new Map([
   ],
   [
     'enableSponsorBlockSelfPromo',
-    { default: true, section: 'ads', desc: 'Skip self-promotion' }
+    {
+      requires: 'enableSponsorBlock',
+      default: true,
+      section: 'ads',
+      desc: 'Skip self-promotion'
+    }
   ],
   [
     'enableSponsorBlockIntro',
-    { default: false, section: 'ads', desc: 'Skip intros' }
+    {
+      requires: 'enableSponsorBlock',
+      default: false,
+      section: 'ads',
+      desc: 'Skip intros'
+    }
   ],
   [
     'enableSponsorBlockOutro',
-    { default: false, section: 'ads', desc: 'Skip outros and credits' }
+    {
+      requires: 'enableSponsorBlock',
+      default: false,
+      section: 'ads',
+      desc: 'Skip outros and credits'
+    }
   ],
   [
     'enableSponsorBlockMusicOfftopic',
     {
+      requires: 'enableSponsorBlock',
       default: false,
       section: 'ads',
       desc: 'Skip non-music parts of music videos'
@@ -92,7 +121,12 @@ const configOptions = new Map([
   ],
   [
     'enableSponsorBlockPreview',
-    { default: false, section: 'ads', desc: 'Skip recaps and previews' }
+    {
+      requires: 'enableSponsorBlock',
+      default: false,
+      section: 'ads',
+      desc: 'Skip recaps and previews'
+    }
   ],
 
   // Playback
@@ -128,6 +162,7 @@ const configOptions = new Map([
   [
     'upgradeThumbnails',
     {
+      live: true,
       default: true,
       section: 'content',
       desc: 'High-quality thumbnails'
@@ -137,9 +172,17 @@ const configOptions = new Map([
   // Interface
   [
     'hideLogo',
-    { default: false, section: 'interface', desc: 'Hide the YouTube logo' }
+    {
+      live: true,
+      default: false,
+      section: 'interface',
+      desc: 'Hide the YouTube logo'
+    }
   ],
-  ['showWatch', { default: false, section: 'interface', desc: 'Show clock' }],
+  [
+    'showWatch',
+    { live: true, default: false, section: 'interface', desc: 'Show clock' }
+  ],
   [
     'autoAccountSelect',
     {

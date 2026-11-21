@@ -135,3 +135,183 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.8);
 }
+
+/* ClearTube TV settings menu */
+.ctv-menu-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2147483647;
+  background: rgba(5, 8, 14, 0.72);
+  font-family: 'YouTube Noto', Roboto, Arial, sans-serif;
+  color: #f1f5f9;
+}
+
+.ctv-menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: 1120px;
+  max-width: 92%;
+  height: 86vh;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #0f141c;
+  border: 2px solid #1e293b;
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+}
+
+.ctv-menu-header {
+  display: flex;
+  align-items: center;
+  padding: 28px 36px 22px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.ctv-menu-logo,
+.ctv-menu-logo svg {
+  width: 56px;
+  height: 56px;
+  flex: none;
+}
+
+.ctv-menu-titles {
+  flex: 1;
+  margin-left: 20px;
+}
+
+.ctv-menu-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.ctv-menu-version {
+  margin-top: 2px;
+  font-size: 17px;
+  color: #94a3b8;
+}
+
+.ctv-menu-pending {
+  display: none;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(20, 184, 166, 0.15);
+  color: #5eead4;
+  font-size: 17px;
+}
+
+.ctv-pending .ctv-menu-pending {
+  display: block;
+}
+
+.ctv-menu-body {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  padding: 0 36px;
+}
+
+.ctv-menu-list {
+  padding: 8px 0 16px;
+  transition: transform 0.15s ease-out;
+}
+
+.ctv-menu-section {
+  padding: 22px 6px 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: #2dd4bf;
+}
+
+.ctv-menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 14px 20px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: #151c27;
+}
+
+.ctv-menu-row.ctv-child {
+  margin-left: 36px;
+}
+
+.ctv-menu-row.ctv-selected {
+  border-color: #14b8a6;
+  background: #1b2a35;
+}
+
+.ctv-menu-row.ctv-disabled {
+  opacity: 0.4;
+}
+
+.ctv-menu-row-label {
+  font-size: 23px;
+  font-weight: 500;
+}
+
+.ctv-menu-row-hint {
+  margin-top: 4px;
+  font-size: 17px;
+  color: #94a3b8;
+}
+
+.ctv-menu-switch,
+.ctv-menu-choice {
+  flex: none;
+  margin-left: 24px;
+  min-width: 92px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ctv-menu-switch {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+.ctv-menu-switch.ctv-on {
+  background: #14b8a6;
+  color: #042f2e;
+}
+
+.ctv-menu-choice {
+  background: #312e81;
+  color: #e0e7ff;
+}
+
+.ctv-menu-footer {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 18px 36px;
+  border-top: 1px solid #1e293b;
+  font-size: 17px;
+  color: #94a3b8;
+}
+
+.ctv-menu-legend {
+  margin-right: 28px;
+}
+
+.ctv-menu-key {
+  margin-right: 8px;
+  padding: 3px 10px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-weight: 700;
+}
