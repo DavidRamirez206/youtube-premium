@@ -1,7 +1,6 @@
 import {
   CustomEventTarget,
-  TypedCustomEvent,
-  type EventMapOf
+  TypedCustomEvent
 } from '../core/custom-event-target';
 import { getPlayer } from './helpers';
 import type { PlayerStateObject, VideoID, YTPlayer } from './yt-api';
@@ -106,12 +105,6 @@ export async function getPlayerManager(): Promise<PlayerManager> {
     const player = await getPlayer();
     instance = new PlayerManager(player);
   }
-
-  instance.addEventListener('playbackStart', function (event) {
-    event.type;
-    event.currentTarget?.currentVideoID;
-    event.detail;
-  });
 
   return instance;
 }
