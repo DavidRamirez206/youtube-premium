@@ -96,3 +96,28 @@ describe('fetchSegments', () => {
     vi.useRealTimers();
   });
 });
+
+describe('live settings', () => {
+  it('starts and stops when SponsorBlock is turned on or off', async () => {
+    const { configWrite } = await import('../src/core/config.js');
+    vi.spyOn(window, 'fetch').mockResolvedValue(response(404, null));
+    const win = window as unknown as {
+      sponsorblock: { videoID: string } | null;
+    };
+
+    configWrite('enableSponsorBlock', true);
+    window.location.hash = `#/watch?v=${ID}`;
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    expect(win.sponsorblock?.videoID).toBe(ID);
+
+    configWrite('enableSponsorBlock', false);
+    expect(win.sponsorblock).toBeNull();
+
+    configWrite('enableSponsorBlock', true);
+    expect(win.sponsorblock?.videoID).toBe(ID);
+
+    window.location.hash = '#/';
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    expect(win.sponsorblock).toBeNull();
+  });
+});
