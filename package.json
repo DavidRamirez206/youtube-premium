@@ -4,6 +4,7 @@
   "description": "Ad-free YouTube app for webOS",
   "type": "module",
   "main": "index.js",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "build": "webpack --mode=production",
     "build:dev": "webpack --mode=development",
