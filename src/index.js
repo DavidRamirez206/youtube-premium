@@ -4,22 +4,19 @@
 import { extractLaunchParams, handleLaunch } from './core/utils';
 import { runTizenLoader } from './loader/tizen-loader';
 
-window.addEventListener('appcontrol', () => {
-  if (typeof window !== 'undefined' && window.tizen) {
-    handleLaunch(extractLaunchParams());
-    runTizenLoader();
-  } else {
-    handleLaunch(extractLaunchParams());
-  }
-});
+let loaderStarted = false;
 
-function main() {
-  if (typeof window !== 'undefined' && window.tizen) {
-    handleLaunch(extractLaunchParams());
+export function launch() {
+  handleLaunch(extractLaunchParams());
+
+  // The loader patches prototypes and rewrites the document, so it must run
+  // exactly once. A relaunch that arrives while it is still loading only
+  // updates the launch URL, which the loader reads when it writes YouTube.
+  if (window.tizen && !loaderStarted) {
+    loaderStarted = true;
     runTizenLoader();
-  } else {
-    handleLaunch(extractLaunchParams());
   }
 }
 
-main();
+window.addEventListener('appcontrol', launch);
+launch();
