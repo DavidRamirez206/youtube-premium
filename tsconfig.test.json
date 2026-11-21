@@ -3,7 +3,13 @@
   "compilerOptions": {
     "allowJs": true,
     "lib": ["ESNext", "DOM"],
-    "types": ["vitest/importMeta"]
+    "types": ["vitest/importMeta", "node"]
   },
-  "include": ["./src", "./test", "./vitest.config.ts"]
+  "include": [
+    "./src",
+    "./test",
+    "./tools/*.js",
+    "./package.json",
+    "./vitest.config.ts"
+  ]
 }

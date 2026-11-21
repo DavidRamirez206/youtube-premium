@@ -8,7 +8,7 @@
   "scripts": {
     "build": "webpack --mode=production",
     "build:dev": "webpack --mode=development",
-    "build:tizen": "webpack --mode=production && node -e \"require('fs').copyFileSync('assets/tizen/config.xml','dist/config.xml')\"",
+    "build:tizen": "webpack --mode=production && node tools/write-tizen-config.js",
     "package:webos": "ares-package -n dist",
     "package:tizen": "node tools/package-wgt.js",
     "icons": "node tools/render-icons.js",
