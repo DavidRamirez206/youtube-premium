@@ -162,6 +162,15 @@ const configOptions = new Map([
     }
   ],
   [
+    'saveWatchHistory',
+    {
+      default: true,
+      section: 'playback',
+      desc: 'Save watch history',
+      hint: 'Videos you watch appear in your YouTube history'
+    }
+  ],
+  [
     'disablePreviews',
     {
       default: false,

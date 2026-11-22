@@ -179,6 +179,9 @@ const es: Dictionary = {
   'option.removeEndscreen.desc': 'Quitar pantallas finales',
   'option.removeEndscreen.hint':
     'Tarjetas que tapan los últimos segundos del video',
+  'option.saveWatchHistory.desc': 'Guardar historial de reproducción',
+  'option.saveWatchHistory.hint':
+    'Los videos que ves aparecen en tu historial de YouTube',
   'option.disablePreviews.desc': 'Desactivar vistas previas',
   'option.disablePreviews.hint':
     'No reproducir videos al seleccionar una miniatura',

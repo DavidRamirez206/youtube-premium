@@ -1,32 +1,46 @@
-function isPrimitive(
-  value: unknown
-): value is string | number | boolean | null | undefined | symbol | bigint {
-  return Object(value) !== value;
-}
+// Player requests are marked as inline playback (isInlinePlaybackNoAd) so
+// YouTube does not answer with ads or fake buffering when ads are blocked.
+// See https://iter.ca/post/yt-adblock/
+//
+// YouTube does not record inline playback in the watch history, so videos
+// played from the watch page are left unmarked while "Save watch history"
+// is on. Previews on other pages are always marked.
+
+import { configRead } from '../core/config';
+import { reportError } from '../core/safe';
 
 const originalStringify = JSON.stringify;
 
-type FunctionReplacer = (this: any, key: string, value: any) => any;
-type WhitelistReplacer = (string | number)[] | null;
+/** Whether a player request should be marked as inline playback. */
+export function shouldMarkInline(hash: string): boolean {
+  if (!configRead('enableAdBlock')) return false;
+  const onWatchPage = hash.startsWith('#/watch');
+  return !(onWatchPage && configRead('saveWatchHistory'));
+}
+
+/** Marks `value` in place when it is a player request. */
+export function markInlinePlayback(value: unknown, hash: string) {
+  if (!value || typeof value !== 'object') return;
+  const ctx = (
+    value as { playbackContext?: { contentPlaybackContext?: unknown } }
+  ).playbackContext?.contentPlaybackContext;
+  if (!ctx || typeof ctx !== 'object') return;
+  if (shouldMarkInline(hash)) {
+    (ctx as Record<string, unknown>).isInlinePlaybackNoAd = true;
+  }
+}
 
 function stringify(
   value: unknown,
-  replacer?: FunctionReplacer | WhitelistReplacer,
+  replacer?: Parameters<typeof JSON.stringify>[1],
   space?: string | number
 ): string {
-  if (!isPrimitive(value)) {
-    // TODO: add below to a dump-level logger
-    // console.debug('JSON.stringify', value, replacer, space);
-
-    // @ts-expect-error TS doesn't allow optional chaining on `unknown`. See: https://github.com/microsoft/TypeScript/issues/37700
-    const ctx = value?.playbackContext?.contentPlaybackContext as unknown;
-    if (!isPrimitive(ctx)) {
-      (ctx as Record<string, unknown>).isInlinePlaybackNoAd = true;
-      console.info('[JSON.stringify] Set isInlinePlaybackNoAd');
-    }
+  try {
+    markInlinePlayback(value, window.location.hash);
+  } catch (error) {
+    reportError('JSON.stringify hook', error);
   }
-
-  return originalStringify(value, replacer as any, space);
+  return originalStringify(value, replacer as never, space);
 }
 
-JSON.stringify = stringify;
+JSON.stringify = stringify as typeof JSON.stringify;
