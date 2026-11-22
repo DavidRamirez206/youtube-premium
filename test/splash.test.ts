@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  openAudio,
   playChime,
+  renderChime,
   showSplash,
   SPLASH_MAX_MS,
+  SPLASH_MOTION_MS,
   SPLASH_MS
 } from '../src/ui/splash';
 
@@ -23,6 +26,40 @@ describe('startup animation', () => {
     vi.advanceTimersByTime(20);
     expect(splash()!.classList).toContain('ctv-splash-run');
     expect(sound).toHaveBeenCalledOnce();
+  });
+
+  it('reports when the parts stop moving', () => {
+    const onMotionEnd = vi.fn();
+    showSplash(document, {
+      appReady: () => false,
+      sound: () => {},
+      onMotionEnd
+    });
+    vi.advanceTimersByTime(20);
+    vi.advanceTimersByTime(SPLASH_MOTION_MS - 300);
+    expect(onMotionEnd).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(400);
+    expect(onMotionEnd).toHaveBeenCalledOnce();
+  });
+
+  it('shows the last frame without sound when already played', () => {
+    let ready = false;
+    const sound = vi.fn();
+    const onMotionEnd = vi.fn();
+    showSplash(document, {
+      appReady: () => ready,
+      sound,
+      still: true,
+      onMotionEnd
+    });
+    expect(splash()!.classList).toContain('ctv-splash-still');
+    expect(onMotionEnd).toHaveBeenCalledOnce();
+    vi.advanceTimersByTime(300);
+    expect(sound).not.toHaveBeenCalled();
+    expect(splash()!.classList).not.toContain('ctv-splash-out');
+    ready = true;
+    vi.advanceTimersByTime(200);
+    expect(splash()!.classList).toContain('ctv-splash-out');
   });
 
   it('counts the minimum time from the first frame', () => {
@@ -102,5 +139,57 @@ describe('startup chime', () => {
       }
     }
     expect(playChime(Broken as never)).toBe(false);
+  });
+
+  it('renders no chime without offline audio', async () => {
+    expect(await renderChime(undefined)).toBeNull();
+  });
+
+  it('renders no chime when rendering fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    class Broken {
+      constructor() {
+        throw new Error('blocked');
+      }
+    }
+    expect(await renderChime(Broken as never)).toBeNull();
+  });
+
+  it('opens no audio without Web Audio', () => {
+    expect(openAudio(undefined)).toBeNull();
+  });
+
+  it('wakes the audio output and plays the chime on it', () => {
+    const started: string[] = [];
+    class FakeContext {
+      sampleRate = 22050;
+      currentTime = 0;
+      destination = {};
+      createBuffer = (_c: number, length: number) => ({
+        getChannelData: () => new Float32Array(length)
+      });
+      createBufferSource = () => ({
+        connect: () => {},
+        start: () => started.push('source')
+      });
+      createGain = () => ({
+        gain: {
+          value: 0,
+          setValueAtTime: () => {},
+          exponentialRampToValueAtTime: () => {}
+        },
+        connect: () => {}
+      });
+      createOscillator = () => ({
+        frequency: { value: 0 },
+        connect: () => {},
+        start: () => started.push('osc'),
+        stop: () => {}
+      });
+    }
+    const ctx = openAudio(FakeContext as never);
+    expect(ctx).toBeInstanceOf(FakeContext);
+    expect(started).toEqual(['source']);
+    expect(playChime(undefined, Promise.resolve(null), ctx)).toBe(true);
   });
 });

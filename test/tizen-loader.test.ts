@@ -67,3 +67,17 @@ describe('runTizenLoader network patches', () => {
     expect(open).toHaveBeenCalled();
   });
 });
+
+describe('pageScripts', () => {
+  it('lists the external scripts of the page as absolute URLs', async () => {
+    const { pageScripts } = await import('../src/loader/tizen-loader');
+    const html =
+      '<head><script nonce="x" src="/s/_/kabuki.js?a=1&amp;b=2"></script>' +
+      '<script>inline()</script>' +
+      '<script src="https://www.gstatic.com/x.js"></script></head>';
+    expect(pageScripts(html)).toEqual([
+      'https://www.youtube.com/s/_/kabuki.js?a=1&b=2',
+      'https://www.gstatic.com/x.js'
+    ]);
+  });
+});

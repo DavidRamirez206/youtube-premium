@@ -10,6 +10,7 @@ declare global {
   }
 }
 
+import { startLoaderSplash } from '../ui/splash';
 import { getProxyIP, discoverProxyIP } from './proxy-config';
 import {
   buildLocalSearch,
@@ -438,6 +439,49 @@ export async function runTizenLoader() {
   await fetchAndRewriteYoutube();
 }
 
+/** Longest wait for the startup animation before YouTube is written. */
+const SPLASH_WAIT_MAX_MS = 3000;
+
+/** Absolute URLs of the external scripts of a YouTube page. */
+export function pageScripts(html: string): string[] {
+  const urls: string[] = [];
+  const re = /<script\s[^>]*?src="([^"]+)"/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(html))) {
+    try {
+      urls.push(
+        new URL(match[1]!.replace(/&amp;/g, '&'), 'https://www.youtube.com/')
+          .href
+      );
+    } catch {
+      // Ignore addresses that cannot be parsed.
+    }
+  }
+  return urls;
+}
+
+/** Starts downloading YouTube's scripts while the animation plays. */
+function preloadScripts(html: string) {
+  try {
+    for (const href of pageScripts(html)) {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'script';
+      link.href = href;
+      document.head.appendChild(link);
+    }
+  } catch (error) {
+    console.warn('[TizenLoader] Script preload failed:', error);
+  }
+}
+
+function waitAtMost(promise: Promise<unknown>, ms: number) {
+  return Promise.race([
+    promise.catch(() => {}),
+    new Promise((resolve) => setTimeout(resolve, ms))
+  ]);
+}
+
 async function fetchAndRewriteYoutube() {
   const targetUrlStr = window.tizenInitialURL || 'https://www.youtube.com/tv#/';
   const targetUrl = new URL(targetUrlStr);
@@ -448,6 +492,11 @@ async function fetchAndRewriteYoutube() {
     'https://www.youtube.com'
   );
 
+  // The animation plays here, on the almost empty loader page, while
+  // YouTube downloads; YouTube is written once its parts stop moving, so
+  // its loading never competes with the animation.
+  const splash = startLoaderSplash();
+
   try {
     console.info('[TizenLoader] Fetching YouTube from:', fetchUrl.toString());
     const response = await fetch(fetchUrl.toString(), { cache: 'no-store' });
@@ -455,6 +504,7 @@ async function fetchAndRewriteYoutube() {
 
     let html = await response.text();
     console.info('[TizenLoader] Fetched HTML size:', html.length);
+    preloadScripts(html);
 
     // Get current local path directory
     const localAppPath = localAppBase(window.location.href);
@@ -481,12 +531,17 @@ async function fetchAndRewriteYoutube() {
     // Set loader executed flag
     window.tizenLoaderExecuted = true;
 
+    await waitAtMost(splash.motion, SPLASH_WAIT_MAX_MS);
+
     // Rewrite document
     document.open();
     document.write(html);
+    // In the same task, so the TV never paints the empty page.
+    splash.cover();
     document.close();
   } catch (error) {
     console.error('[TizenLoader] Fetch failed:', error);
+    splash.hide();
     showNetworkErrorUI();
   }
 }
