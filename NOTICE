@@ -25,6 +25,10 @@ the Git history.
 Uses SponsorBlock and DeArrow data from https://sponsor.ajay.app/, licensed
 under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
+The startup animation embeds a subset of the Roboto font by Google,
+licensed under the Apache License 2.0
+(https://www.apache.org/licenses/LICENSE-2.0).
+
 "YouTube" is a trademark of Google LLC. "Samsung" and "Tizen" are
 trademarks of Samsung Electronics Co., Ltd. and the Linux Foundation
 respectively. "LG" and "webOS" are trademarks of LG Electronics Inc. This
