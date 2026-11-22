@@ -15,6 +15,28 @@ describe('startup animation', () => {
     vi.useRealTimers();
   });
 
+  it('starts the animation and the sound with the first frame', () => {
+    const sound = vi.fn();
+    showSplash(document, { appReady: () => false, sound });
+    expect(splash()!.classList).not.toContain('ctv-splash-run');
+    expect(sound).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(20);
+    expect(splash()!.classList).toContain('ctv-splash-run');
+    expect(sound).toHaveBeenCalledOnce();
+  });
+
+  it('counts the minimum time from the first frame', () => {
+    let ready = true;
+    const raf = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation(() => 0);
+    showSplash(document, { appReady: () => ready, sound: () => {} });
+    vi.advanceTimersByTime(SPLASH_MS + 200);
+    expect(splash()!.classList).not.toContain('ctv-splash-out');
+    raf.mockRestore();
+    ready = false;
+  });
+
   it('stays until the animation ended and YouTube is ready', () => {
     let ready = false;
     showSplash(document, { appReady: () => ready, sound: () => {} });

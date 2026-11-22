@@ -28,16 +28,17 @@ const STYLE = `
 .ctv-splash-badge{width:300px;height:300px;border-radius:72px;display:flex;
   align-items:center;justify-content:center;
   background:linear-gradient(135deg,#14b8a6,#4f46e5);
-  box-shadow:0 30px 80px rgba(20,184,166,.35);
-  animation:ctv-splash-badge .7s cubic-bezier(.2,1.4,.4,1) both}
-.ctv-splash-arc{stroke-dasharray:760;stroke-dashoffset:760;
-  animation:ctv-splash-draw .8s .35s ease-out forwards}
-.ctv-splash-play{transform-origin:272px 256px;transform:scale(0);
-  animation:ctv-splash-pop .35s 1s cubic-bezier(.2,1.6,.4,1) forwards}
-.ctv-splash-spark{transform-origin:404px 256px;opacity:0;
-  animation:ctv-splash-spark .6s 1.3s ease-out forwards}
+  box-shadow:0 30px 80px rgba(20,184,166,.35);opacity:0}
+.ctv-splash-run .ctv-splash-badge{animation:ctv-splash-badge .7s cubic-bezier(.2,1.4,.4,1) both}
+.ctv-splash-arc{stroke-dasharray:760;stroke-dashoffset:760}
+.ctv-splash-run .ctv-splash-arc{animation:ctv-splash-draw .8s .35s ease-out forwards}
+.ctv-splash-play{transform-origin:272px 256px;transform:scale(0)}
+.ctv-splash-run .ctv-splash-play{animation:ctv-splash-pop .35s 1s cubic-bezier(.2,1.6,.4,1) forwards}
+.ctv-splash-spark{transform-origin:404px 256px;opacity:0}
+.ctv-splash-run .ctv-splash-spark{animation:ctv-splash-spark .6s 1.3s ease-out forwards}
 .ctv-splash-name{margin-top:44px;color:#f1f5f9;font-size:56px;font-weight:600;
-  letter-spacing:1px;opacity:0;animation:ctv-splash-rise .5s 1.45s ease-out forwards}
+  letter-spacing:1px;opacity:0}
+.ctv-splash-run .ctv-splash-name{animation:ctv-splash-rise .5s 1.45s ease-out forwards}
 .ctv-splash-name span{color:#5eead4}
 @keyframes ctv-splash-badge{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes ctv-splash-draw{to{stroke-dashoffset:0}}
@@ -118,7 +119,10 @@ export function showSplash(
   root.appendChild(style);
   root.appendChild(splash);
 
-  const started = Date.now();
+  // The TV paints nothing while YouTube's scripts are parsed, so the
+  // animation, the sound and the minimum time start with the first frame.
+  let started = Number.POSITIVE_INFINITY;
+  const created = Date.now();
   let done = false;
 
   const hide = () => {
@@ -136,7 +140,10 @@ export function showSplash(
   const poll = setInterval(() => {
     try {
       const elapsed = Date.now() - started;
-      if (elapsed >= SPLASH_MAX_MS || (elapsed >= SPLASH_MS && appReady())) {
+      if (
+        Date.now() - created >= SPLASH_MAX_MS ||
+        (elapsed >= SPLASH_MS && appReady())
+      ) {
         hide();
       }
     } catch (error) {
@@ -146,11 +153,19 @@ export function showSplash(
   }, 100);
   doc.addEventListener('keydown', hide, true);
 
-  try {
-    sound();
-  } catch (error) {
-    reportError('startup sound', error);
-  }
+  const raf =
+    window.requestAnimationFrame?.bind(window) ||
+    ((cb: () => void) => setTimeout(cb, 16));
+  raf(() => {
+    if (done) return;
+    started = Date.now();
+    splash.classList.add('ctv-splash-run');
+    try {
+      sound();
+    } catch (error) {
+      reportError('startup sound', error);
+    }
+  });
   return hide;
 }
 
