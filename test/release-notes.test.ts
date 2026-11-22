@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseCommit, renderNotes } from '../tools/release-notes.js';
+import {
+  isPrerelease,
+  parseCommit,
+  renderNotes
+} from '../tools/release-notes.js';
 
 describe('parseCommit', () => {
   it('parses type, scope and subject', () => {
@@ -54,5 +58,14 @@ describe('renderNotes', () => {
     );
     expect(notes).toContain('### Security');
     expect(notes).toContain('compare/v1.0.0...v1.1.0');
+  });
+});
+
+describe('isPrerelease', () => {
+  it('tells pre-release tags from stable ones', () => {
+    expect(isPrerelease('v0.6.0-beta.1')).toBe(true);
+    expect(isPrerelease('v1.0.0-rc.2')).toBe(true);
+    expect(isPrerelease('v0.6.0')).toBe(false);
+    expect(isPrerelease('HEAD')).toBe(false);
   });
 });

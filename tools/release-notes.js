@@ -30,6 +30,15 @@ const HEADER = /^(\w+)(?:\(([^)]+)\))?(!)?: (.+)$/;
  */
 
 /**
+ * Whether a tag such as v1.2.0-beta.1 names a pre-release.
+ * @param {string} tag
+ * @returns {boolean}
+ */
+export function isPrerelease(tag) {
+  return /^v?\d+\.\d+\.\d+-/.test(tag);
+}
+
+/**
  * @param {string} subject first line of the commit message
  * @param {string} body rest of the message
  * @param {string} hash short hash
@@ -96,7 +105,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const tag = process.argv[2] ?? 'HEAD';
   let previousTag = '';
   try {
-    previousTag = git(['describe', '--tags', '--abbrev=0', `${tag}^`]);
+    // A stable release lists everything since the previous stable one, so
+    // the changes first published in its pre-releases are included.
+    const exclude = isPrerelease(tag) ? [] : ['--exclude', '*-*'];
+    previousTag = git([
+      'describe',
+      '--tags',
+      '--abbrev=0',
+      ...exclude,
+      `${tag}^`
+    ]);
   } catch {
     // First release: use the whole history.
   }
