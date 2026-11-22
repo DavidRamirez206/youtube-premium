@@ -214,6 +214,32 @@ YouTube Premium aparece en la lista de aplicaciones. Para actualizarla,
 instala de la misma forma el `.ipk` de la nueva versión; los ajustes se
 conservan.
 
+### Dejarla instalada de forma permanente
+
+Sin root, LG borra las aplicaciones de desarrollador cuando caduca la sesión
+del modo desarrollador. Hay dos formas de evitarlo:
+
+- **Root (permanente).** En un televisor con root la aplicación se instala
+  desde el [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel)
+  y no depende del modo desarrollador: sobrevive a los reinicios y no
+  caduca. Que un televisor admita root depende de su versión de firmware;
+  compruébalo en [CanI.RootMy.TV](https://cani.rootmy.tv) y sigue la
+  [guía de root de webOS Homebrew](https://www.webosbrew.org/rooting/)
+  (con herramientas como [faultmanager-autoroot](https://github.com/throwaway96/faultmanager-autoroot)
+  o [dejavuln-autoroot](https://github.com/throwaway96/dejavuln-autoroot)).
+  Después desactiva las actualizaciones automáticas del firmware, porque las
+  actualizaciones de LG suelen cerrar la vulnerabilidad y quitar el root.
+  El root no es oficial, se hace bajo tu responsabilidad y puede afectar a
+  la garantía.
+- **Renovar la sesión automáticamente (sin root).** La sesión se puede
+  ampliar antes de que caduque desde la aplicación Developer Mode, desde
+  [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop) o
+  con una tarea programada que envía el token de la sesión a LG (ver
+  [este ejemplo con Home Assistant](https://elis.nu/blog/2022/07/keeping-webos-developer-mode-alive-with-home-assistant/)).
+  Estos métodos de la comunidad no son oficiales y a algunos usuarios les
+  han dejado de funcionar; si una renovación falla y la sesión caduca, hay
+  que volver a instalar la aplicación.
+
 ## Uso
 
 | Botón del control   | Acción                                                                  |

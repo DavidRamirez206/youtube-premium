@@ -210,6 +210,31 @@ do not depend on a Developer Mode session.
 YouTube Premium appears in the list of applications. To update it, install
 the `.ipk` of the new release in the same way; settings are kept.
 
+### Keeping it installed permanently
+
+Without root, LG removes developer apps when the Developer Mode session
+expires. There are two ways to avoid it:
+
+- **Root (permanent).** On a rooted television the application is
+  installed from the [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel)
+  and does not depend on Developer Mode: it survives restarts and never
+  expires. Whether a television can be rooted depends on its firmware
+  version; check it on [CanI.RootMy.TV](https://cani.rootmy.tv) and follow
+  the [webOS Homebrew rooting guide](https://www.webosbrew.org/rooting/)
+  (tools such as [faultmanager-autoroot](https://github.com/throwaway96/faultmanager-autoroot)
+  or [dejavuln-autoroot](https://github.com/throwaway96/dejavuln-autoroot)).
+  Turn off automatic firmware updates afterwards, since LG updates usually
+  close the vulnerability and remove root. Rooting is unofficial, is done
+  at your own risk and may affect the warranty.
+- **Renew the session automatically (no root).** The session can be
+  extended before it expires from the Developer Mode app, from
+  [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop), or
+  with a scheduled task that sends the session token to LG (see
+  [this example with Home Assistant](https://elis.nu/blog/2022/07/keeping-webos-developer-mode-alive-with-home-assistant/)).
+  These community methods are not official and have stopped working for
+  some users; if a renewal fails and the session expires, the application
+  must be installed again.
+
 ## Usage
 
 | Remote key | Action                                                          |
