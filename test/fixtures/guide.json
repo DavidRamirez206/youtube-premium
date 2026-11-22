@@ -1,0 +1,194 @@
+{
+  "items": [
+    {
+      "guideSectionRenderer": {
+        "items": [
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "searchEndpoint": {}
+              },
+              "icon": {
+                "iconType": "SEARCH"
+              },
+              "formattedTitle": {
+                "simpleText": "Search"
+              }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": {
+                  "browseId": "x"
+                }
+              },
+              "icon": {
+                "iconType": "WHAT_TO_WATCH"
+              },
+              "formattedTitle": {
+                "simpleText": "Home"
+              }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "reelWatchEndpoint": {}
+              },
+              "icon": {
+                "iconType": "YOUTUBE_SHORTS_FILL_24"
+              },
+              "formattedTitle": {
+                "simpleText": "Shorts"
+              }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": {
+                  "browseId": "x"
+                }
+              },
+              "icon": {
+                "iconType": "SUBSCRIPTIONS"
+              },
+              "formattedTitle": {
+                "simpleText": "Subscriptions"
+              }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": {
+                  "browseId": "x"
+                }
+              },
+              "icon": {
+                "iconType": "BOOKMARK"
+              },
+              "formattedTitle": {
+                "simpleText": "Library"
+              }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": {
+                  "browseId": "x"
+                }
+              },
+              "icon": {
+                "iconType": "YOUTUBE_MUSIC"
+              },
+              "formattedTitle": {
+                "simpleText": "Music"
+              }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": {
+                  "browseId": "x"
+                }
+              },
+              "icon": {
+                "iconType": "LIVE"
+              },
+              "formattedTitle": {
+                "simpleText": "Live"
+              }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": {
+                  "browseId": "x"
+                }
+              },
+              "icon": {
+                "iconType": "GAMING"
+              },
+              "formattedTitle": {
+                "simpleText": "Gaming"
+              }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": {
+                  "browseId": "x"
+                }
+              },
+              "icon": {
+                "iconType": "NEWS"
+              },
+              "formattedTitle": {
+                "simpleText": "News"
+              }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": {
+                  "browseId": "x"
+                }
+              },
+              "icon": {
+                "iconType": "TROPHY"
+              },
+              "formattedTitle": {
+                "simpleText": "Sports"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "guideSectionRenderer": {
+        "items": [
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "applicationSettingsEndpoint": {}
+              },
+              "icon": {
+                "iconType": "SETTINGS"
+              },
+              "formattedTitle": {
+                "simpleText": "Settings"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "guideSectionRenderer": {
+        "items": [
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "signalNavigationEndpoint": {}
+              },
+              "icon": {
+                "iconType": "SIGN_IN"
+              },
+              "formattedTitle": {
+                "simpleText": "Sign in"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

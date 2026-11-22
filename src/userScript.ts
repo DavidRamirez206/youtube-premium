@@ -69,6 +69,10 @@ const features: [string, () => Promise<unknown>][] = [
   ],
   ['ui', () => import(/* webpackMode: "eager" */ './ui/ui.js')],
   [
+    'guide-entry',
+    () => import(/* webpackMode: "eager" */ './features/guide-entry')
+  ],
+  [
     'thumbnails',
     () => import(/* webpackMode: "eager" */ './features/thumbnail-quality')
   ],
