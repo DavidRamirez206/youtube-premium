@@ -6,6 +6,7 @@ import { createSettingsMenu } from './settings-menu.js';
 import { onBodyReady } from '../core/dom';
 import { t } from '../core/i18n';
 import { reportError } from '../core/safe';
+import { debugConsole } from './debug-console';
 
 // We handle key events ourselves.
 window.__spatialNavigation__.keyMode = 'NONE';
@@ -243,16 +244,13 @@ const eventHandler = (evt) => {
     return swallowKey(evt);
   } else if (keyColor === 'red') {
     if (evt.type === 'keydown') {
-      const consoleElm = document.getElementById('ytaf-debug-console');
-      if (consoleElm) {
-        if (consoleElm.style.display === 'none') {
-          consoleElm.style.display = 'block';
-          showNotification(t('notify.debugShown'), 2000, 'red');
-        } else {
-          consoleElm.style.display = 'none';
-          showNotification(t('notify.debugHidden'), 2000, 'red');
-        }
-      }
+      const show = !debugConsole.isVisible();
+      debugConsole.setVisible(show);
+      showNotification(
+        t(show ? 'notify.debugShown' : 'notify.debugHidden'),
+        2000,
+        'red'
+      );
     }
     return swallowKey(evt);
   } else if (keyColor === 'blue') {
