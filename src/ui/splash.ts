@@ -10,6 +10,15 @@ import { SPLASH_FONT_FAMILY, SPLASH_FONT_URL } from './splash-font';
 export const SPLASH_MS = 2600;
 /** The splash is removed after this even if YouTube has not painted. */
 export const SPLASH_MAX_MS = 7000;
+/**
+ * Before fading out, wait until the TV paints this many frames in a row,
+ * each within QUIET_FRAME_MS: YouTube has finished building the home
+ * screen and the fade does not compete with it. Never longer than
+ * QUIET_MAX_MS.
+ */
+export const QUIET_FRAMES = 6;
+export const QUIET_FRAME_MS = 50;
+export const QUIET_MAX_MS = 2500;
 /** The parts of the mark stop moving this long after the first frame. */
 export const SPLASH_MOTION_MS = 1950;
 const FADE_MS = 400;
@@ -237,7 +246,14 @@ interface SplashOptions {
 export function showSplash(
   doc: Document = document,
   {
-    appReady = () => !!doc.querySelector('ytlr-app'),
+    // The home screen is built once YouTube has placed the focus in it.
+    appReady = () => {
+      const app = doc.querySelector('ytlr-app');
+      const focused = doc.activeElement;
+      return (
+        !!app && !!focused && focused !== doc.body && app.contains(focused)
+      );
+    },
     sound = () => playChime(),
     still = false,
     onMotionEnd = () => {}
@@ -282,16 +298,35 @@ export function showSplash(
     }, FADE_MS);
   };
 
+  const raf =
+    window.requestAnimationFrame?.bind(window) ||
+    ((cb: () => void) => setTimeout(cb, 16));
+
+  // Fades out once the TV paints smoothly again (or after QUIET_MAX_MS).
+  let waiting = false;
+  const hideWhenQuiet = () => {
+    if (waiting) return;
+    waiting = true;
+    setTimeout(hide, QUIET_MAX_MS);
+    let last = 0;
+    let calm = 0;
+    const frame = () => {
+      if (done) return;
+      const now = Date.now();
+      if (last) calm = now - last <= QUIET_FRAME_MS ? calm + 1 : 0;
+      last = now;
+      if (calm >= QUIET_FRAMES) hide();
+      else raf(frame);
+    };
+    raf(frame);
+  };
+
   const poll = setInterval(() => {
     try {
       const elapsed = Date.now() - started;
       if (elapsed >= SPLASH_MOTION_MS) motionEnded();
-      if (
-        Date.now() - created >= SPLASH_MAX_MS ||
-        (elapsed >= SPLASH_MS && appReady())
-      ) {
-        hide();
-      }
+      if (Date.now() - created >= SPLASH_MAX_MS) hide();
+      else if (elapsed >= SPLASH_MS && appReady()) hideWhenQuiet();
     } catch (error) {
       reportError('startup animation', error);
       hide();
@@ -299,9 +334,6 @@ export function showSplash(
   }, 100);
   doc.addEventListener('keydown', hide, true);
 
-  const raf =
-    window.requestAnimationFrame?.bind(window) ||
-    ((cb: () => void) => setTimeout(cb, 16));
   if (still) {
     // Already played: only covers YouTube until it is ready.
     started = Date.now() - SPLASH_MS;

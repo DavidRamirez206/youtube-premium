@@ -4,12 +4,18 @@ import {
   playChime,
   renderChime,
   showSplash,
+  QUIET_FRAME_MS,
+  QUIET_FRAMES,
+  QUIET_MAX_MS,
   SPLASH_MAX_MS,
   SPLASH_MOTION_MS,
   SPLASH_MS
 } from '../src/ui/splash';
 
 const splash = () => document.querySelector('.ctv-splash');
+/** Fading out or already removed. */
+const leaving = () =>
+  !splash() || splash()!.classList.contains('ctv-splash-out');
 
 describe('startup animation', () => {
   beforeEach(() => vi.useFakeTimers());
@@ -58,8 +64,8 @@ describe('startup animation', () => {
     expect(sound).not.toHaveBeenCalled();
     expect(splash()!.classList).not.toContain('ctv-splash-out');
     ready = true;
-    vi.advanceTimersByTime(200);
-    expect(splash()!.classList).toContain('ctv-splash-out');
+    vi.advanceTimersByTime(200 + QUIET_MAX_MS);
+    expect(leaving()).toBe(true);
   });
 
   it('counts the minimum time from the first frame', () => {
@@ -81,10 +87,34 @@ describe('startup animation', () => {
     vi.advanceTimersByTime(SPLASH_MS + 200);
     expect(splash()!.classList).not.toContain('ctv-splash-out');
     ready = true;
-    vi.advanceTimersByTime(200);
-    expect(splash()!.classList).toContain('ctv-splash-out');
+    vi.advanceTimersByTime(200 + QUIET_MAX_MS);
+    expect(leaving()).toBe(true);
     vi.advanceTimersByTime(500);
     expect(splash()).toBeNull();
+  });
+
+  it('fades out as soon as the TV paints smoothly again', () => {
+    const raf = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((cb) => setTimeout(() => cb(0), 16) as never);
+    showSplash(document, { appReady: () => true, sound: () => {} });
+    vi.advanceTimersByTime(SPLASH_MS + 100 + 16 * (QUIET_FRAMES + 2));
+    expect(splash()!.classList).toContain('ctv-splash-out');
+    raf.mockRestore();
+  });
+
+  it('waits while the TV is still busy', () => {
+    const raf = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation(
+        (cb) => setTimeout(() => cb(0), QUIET_FRAME_MS + 30) as never
+      );
+    showSplash(document, { appReady: () => true, sound: () => {} });
+    vi.advanceTimersByTime(SPLASH_MS + 1000);
+    expect(splash()!.classList).not.toContain('ctv-splash-out');
+    vi.advanceTimersByTime(QUIET_MAX_MS);
+    expect(leaving()).toBe(true);
+    raf.mockRestore();
   });
 
   it('goes away after the maximum time even if YouTube never paints', () => {
