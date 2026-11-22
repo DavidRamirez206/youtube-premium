@@ -1,3 +1,4 @@
+import { onBodyReady } from '../core/dom';
 import { waitForChildAdd } from '../core/utils';
 
 import type { YTPlayer } from './yt-api';
@@ -18,8 +19,18 @@ export async function requireElement<E extends typeof Element>(
     return alreadyPresent as InstanceType<E>;
   }
 
+  // The user script runs inside <head>, before <body> exists.
+  const body = await new Promise<HTMLElement>((resolve) =>
+    onBodyReady(resolve)
+  );
+  const already = body.querySelector(cssSelectors);
+  if (already) {
+    if (!(already instanceof expected)) throw new Error();
+    return already as InstanceType<E>;
+  }
+
   const result = await waitForChildAdd(
-    document.body,
+    body,
     (node): node is Element =>
       node instanceof Element && node.matches(cssSelectors),
     true
