@@ -1,5 +1,5 @@
 /*global __YTAF_VERSION__*/
-// ClearTube TV settings menu. Changes are staged in a draft and applied
+// YouTube Premium settings menu. Changes are staged in a draft and applied
 // together with "Apply changes"; nothing reloads the app. Leaving with
 // unsaved changes asks whether to apply, discard or keep editing.
 // Design rules: workspace skill "menu-ui".
@@ -16,7 +16,23 @@ import { reportError } from '../core/safe';
 import { computeListOffset } from './menu-scroll.js';
 
 const LOGO_MARK =
-  '<svg viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="ctv-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14b8a6"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><rect width="512" height="512" rx="116" fill="url(#ctv-g)"/><path d="M370.9 159.6A150 150 0 1 0 370.9 352.4" fill="none" stroke="#fff" stroke-width="44" stroke-linecap="round"/><path d="M226 200v112l92-56z" fill="#fff" stroke="#fff" stroke-width="22" stroke-linejoin="round"/></svg>';
+  '<svg viewBox="0 0 512 512" aria-hidden="true"><rect x="16" y="106" width="480" height="300" rx="84" fill="#ff0000"/><path d="M206 186v140l120-70z" fill="#fff"/></svg>';
+
+/**
+ * Whether YouTube shows its light theme: its text is dark on a light page.
+ * @returns {boolean}
+ */
+export function youtubeThemeIsLight() {
+  try {
+    const app = document.querySelector('ytlr-app') ?? document.body;
+    const rgb = getComputedStyle(app).color.match(/\d+(\.\d+)?/g);
+    if (!rgb || rgb.length < 3) return false;
+    const [r, g, b] = rgb.map(Number);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
+  } catch {
+    return false;
+  }
+}
 
 /** Size the menu is designed for; smaller screens scale it down. */
 const DESIGN_WIDTH = 1920;
@@ -194,13 +210,17 @@ export function createSettingsMenu({ notify = () => {} } = {}) {
   addRow(RESET_ACTION, false).classList.add('ctv-action');
   addHeading('about');
   const about = el('div', 'ctv-menu-about');
-  const aboutLines = ['about.data', 'about.license', 'about.link'].map(
-    (key) => {
-      const line = el('div', '');
-      about.appendChild(line);
-      return /** @type {[HTMLElement, string]} */ ([line, key]);
-    }
-  );
+  const aboutLines = [
+    'about.credits',
+    'about.data',
+    'about.font',
+    'about.license',
+    'about.link'
+  ].map((key) => {
+    const line = el('div', '');
+    about.appendChild(line);
+    return /** @type {[HTMLElement, string]} */ ([line, key]);
+  });
   list.appendChild(about);
 
   // Footer
@@ -504,6 +524,7 @@ export function createSettingsMenu({ notify = () => {} } = {}) {
         dialogOpen = false;
         draft.clear();
         onClosed = whenClosed ?? (() => {});
+        overlay.classList.toggle('ctv-light', youtubeThemeIsLight());
         overlay.style.display = 'block';
         applyScale();
         render();
