@@ -59,6 +59,10 @@ const features: [string, () => Promise<unknown>][] = [
     'inline-ads',
     () => import(/* webpackMode: "eager" */ './hooks/json-stringify')
   ],
+  [
+    'watch-history',
+    () => import(/* webpackMode: "eager" */ './features/watch-history')
+  ],
   ['shorts', () => import(/* webpackMode: "eager" */ './features/shorts')],
   ['dearrow', () => import(/* webpackMode: "eager" */ './features/dearrow')],
   [
