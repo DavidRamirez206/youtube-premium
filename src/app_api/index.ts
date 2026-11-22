@@ -30,12 +30,11 @@ export class ResolveCommandRegistry {
     command: Record<string, unknown>,
     extra?: unknown
   ) => {
-    console.group(`[${this.constructor.name}] Resolving`);
-    console.debug('Command:');
-    console.debug(command);
-    console.debug('Extra:');
-    console.debug(extra);
-    console.groupEnd();
+    // YouTube resolves many commands per key press: log them only while
+    // debugging, so normal navigation does not pay for it.
+    if (window.__ytaf_debug__) {
+      console.debug('[ResolveCommandRegistry] Resolving', command, extra);
+    }
 
     for (const key of Object.keys(command)) {
       if (this.#cmds.has(key)) {
