@@ -1,7 +1,10 @@
 // "CT Options" entry in YouTube's side menu, right above YouTube's own
 // Settings, that opens the ClearTube TV settings menu. The entry is added
-// to the side menu (guide) API response; selecting it sends a custom
-// command that is intercepted before YouTube tries to resolve it.
+// to the side menu (guide) API response.
+//
+// YouTube TV runs a side menu entry's command as soon as the entry gets
+// focus, so the command is only intercepted (and ignored) and the menu is
+// opened when OK is pressed on the focused entry.
 
 import { ResolveCommandRegistry } from '../app_api';
 import { t } from '../core/i18n';
@@ -83,11 +86,45 @@ export function openOptions() {
   }
 }
 
+const OK_KEYS = [13, 32];
+
+/** Whether the focused element is the "CT Options" entry. */
+export function optionsEntryFocused(doc: Document = document): boolean {
+  const focused = doc.activeElement;
+  return !!focused && focused.textContent?.trim() === t('guide.options');
+}
+
+/** Opens the menu with OK on the entry; the press never reaches YouTube. */
+export function installOptionsKey(target: Window = window) {
+  let consumed = false;
+  const onKey = (evt: KeyboardEvent) => {
+    try {
+      if (!OK_KEYS.includes(evt.keyCode)) return;
+      if (evt.type === 'keydown') {
+        consumed = optionsEntryFocused(target.document);
+        if (!consumed) return;
+        openOptions();
+      } else if (!consumed) {
+        return;
+      } else if (evt.type === 'keyup') {
+        consumed = false;
+      }
+      evt.preventDefault();
+      evt.stopImmediatePropagation();
+    } catch (error) {
+      reportError('CT Options key', error);
+    }
+  };
+  for (const type of ['keydown', 'keypress', 'keyup'] as const) {
+    target.addEventListener(type, onKey, true);
+  }
+}
+
+installOptionsKey();
+
 ResolveCommandRegistry.getInstance()
   .then((registry) => {
-    registry.setHook(OPTIONS_COMMAND, () => {
-      openOptions();
-      return undefined;
-    });
+    // Runs when the entry gets focus: do nothing.
+    registry.setHook(OPTIONS_COMMAND, () => undefined);
   })
   .catch((error: unknown) => reportError('CT Options', error));

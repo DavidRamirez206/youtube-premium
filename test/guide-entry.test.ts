@@ -78,6 +78,45 @@ describe('CT Options side menu entry', () => {
     expect(all.filter((t) => t === 'CT Options')).toHaveLength(1);
   });
 
+  it('opens the menu only with OK on the focused entry', () => {
+    configWrite('language', 'en');
+    const show = vi.fn();
+    window.ytaf_showOptionsPanel = show;
+    const entry = document.createElement('div');
+    entry.tabIndex = 0;
+    entry.textContent = ' CT Options ';
+    const other = document.createElement('div');
+    other.tabIndex = 0;
+    other.textContent = 'Settings';
+    document.body.append(entry, other);
+    const youtube = vi.fn();
+    document.addEventListener('keydown', youtube);
+    document.addEventListener('keyup', youtube);
+    const ok = (type: string) =>
+      document.activeElement!.dispatchEvent(
+        new KeyboardEvent(type, { keyCode: 13, bubbles: true })
+      );
+
+    entry.focus();
+    expect(show).not.toHaveBeenCalled(); // focus alone does nothing
+    ok('keydown');
+    ok('keyup');
+    expect(show).toHaveBeenCalledWith(true);
+    expect(youtube).not.toHaveBeenCalled();
+
+    other.focus();
+    ok('keydown');
+    ok('keyup');
+    expect(show).toHaveBeenCalledOnce();
+    expect(youtube).toHaveBeenCalledTimes(2);
+
+    document.removeEventListener('keydown', youtube);
+    document.removeEventListener('keyup', youtube);
+    entry.remove();
+    other.remove();
+    configWrite('language', 'auto');
+  });
+
   it('opens the ClearTube menu', () => {
     const show = vi.fn();
     window.ytaf_showOptionsPanel = show;
