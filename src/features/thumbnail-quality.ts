@@ -125,13 +125,12 @@ function isWatchPage() {
   );
 }
 
-let cssParser: HTMLElement | null = null;
+const CSS_URL = /url\((['"]?)(.*?)\1\)/;
 
-function backgroundOf(cssText: string | null) {
-  if (!cssText || !cssText.includes('url(')) return '';
-  cssParser ??= document.createElement('div');
-  cssParser.style.cssText = cssText;
-  return cssParser.style.backgroundImage;
+/** Address inside the first url(...) of a style, without parsing CSS. */
+export function backgroundUrlOf(css: string | null | undefined): string {
+  if (!css) return '';
+  return CSS_URL.exec(css)?.[2] ?? '';
 }
 
 /**
@@ -151,7 +150,8 @@ export function handleMutations(mutations: MutationRecord[]) {
         node instanceof HTMLElement &&
         node.tagName === YT_THUMBNAIL_TAG &&
         node.style.backgroundImage !== '' &&
-        node.style.backgroundImage !== backgroundOf(mut.oldValue)
+        backgroundUrlOf(node.style.backgroundImage) !==
+          backgroundUrlOf(mut.oldValue)
       ) {
         void upgradeBgImg(node);
       }

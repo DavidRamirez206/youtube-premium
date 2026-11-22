@@ -71,3 +71,20 @@ describe('thumbnail upgrade observer', () => {
     expect(loaded).toHaveLength(0);
   });
 });
+
+describe('backgroundUrlOf', () => {
+  it('reads the address of a background without parsing CSS', async () => {
+    const { backgroundUrlOf } =
+      await import('../src/features/thumbnail-quality');
+    expect(backgroundUrlOf('url("https://i.ytimg.com/a.jpg")')).toBe(
+      'https://i.ytimg.com/a.jpg'
+    );
+    expect(
+      backgroundUrlOf(
+        "width: 10px; background-image: url('https://i.ytimg.com/b.jpg');"
+      )
+    ).toBe('https://i.ytimg.com/b.jpg');
+    expect(backgroundUrlOf('color: red')).toBe('');
+    expect(backgroundUrlOf(null)).toBe('');
+  });
+});
