@@ -1,6 +1,6 @@
 {
-  "name": "cleartube-tv",
-  "version": "0.6.0",
+  "name": "youtube-premium",
+  "version": "0.7.0",
   "description": "Unofficial ad-free client for YouTube on Samsung Tizen and LG webOS TVs. Not affiliated with Google or Samsung.",
   "type": "module",
   "main": "index.js",
@@ -27,10 +27,10 @@
     "lint:prettier": "prettier --check .",
     "lint:all": "pnpm run \"/^lint:(?!all)/\""
   },
-  "repository": "github:DavidRamirez206/ClearTube-TV",
+  "repository": "github:DavidRamirez206/youtube-premium",
   "license": "GPL-3.0-only",
-  "bugs": "https://github.com/DavidRamirez206/ClearTube-TV/issues",
-  "homepage": "https://github.com/DavidRamirez206/ClearTube-TV#readme",
+  "bugs": "https://github.com/DavidRamirez206/youtube-premium/issues",
+  "homepage": "https://github.com/DavidRamirez206/youtube-premium#readme",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.29.2",
     "core-js-pure": "^3.49.0",
