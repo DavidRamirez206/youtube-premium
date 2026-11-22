@@ -2,7 +2,7 @@
 //
 // YouTube records a watched video through two pings, /api/stats/playback
 // and /api/stats/watchtime. Its player only adds the account token to them
-// when the page itself is served over https; ClearTube TV runs from file://,
+// when the page itself is served over https; YouTube Premium runs from file://,
 // so the pings went out without it and the videos never reached the
 // account's history.
 //

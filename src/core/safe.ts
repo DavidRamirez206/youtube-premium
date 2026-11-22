@@ -9,7 +9,7 @@ function describe(error: unknown) {
 
 export function reportError(scope: string, error: unknown) {
   try {
-    console.error(`[ClearTube] ${scope}:`, describe(error));
+    console.error(`[YouTube Premium] ${scope}:`, describe(error));
   } catch {
     // Logging must never throw.
   }
@@ -51,7 +51,7 @@ export function guard<A extends unknown[], R>(
 }
 
 /**
- * Logs uncaught errors and rejections coming from ClearTube TV code so they
+ * Logs uncaught errors and rejections coming from YouTube Premium code so they
  * show up in the debug console (Red button). They are never re-thrown or
  * shown as dialogs.
  */

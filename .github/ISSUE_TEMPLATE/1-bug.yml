@@ -1,19 +1,19 @@
 name: Bug report
-description: Something provided by ClearTube TV does not work, or it behaves differently from the stock YouTube TV app.
+description: Something provided by YouTube Premium does not work, or it behaves differently from the stock YouTube TV app.
 labels: ['bug', 'needs triage']
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report a bug. Please search the [existing issues](https://github.com/DavidRamirez206/ClearTube-TV/issues) first.
+        Thanks for taking the time to report a bug. Please search the [existing issues](https://github.com/DavidRamirez206/youtube-premium/issues) first.
 
-        This form is for problems with ClearTube TV features (ad blocking, SponsorBlock, the settings menu, remote keys...) or behaviour that differs from the stock YouTube TV app. For changes to YouTube's own behaviour, use the feature request form.
+        This form is for problems with YouTube Premium features (ad blocking, SponsorBlock, the settings menu, remote keys...) or behaviour that differs from the stock YouTube TV app. For changes to YouTube's own behaviour, use the feature request form.
 
         **Never paste certificates, passwords, cookies or account tokens.**
   - type: input
     id: version
     attributes:
-      label: ClearTube TV version
+      label: YouTube Premium version
       description: Shown at the top of the settings menu (green button).
       placeholder: e.g. 1.0.0
     validations:

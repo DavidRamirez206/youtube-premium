@@ -1,4 +1,4 @@
-// Startup animation: the ClearTube TV mark draws itself with a short
+// Startup animation: the YouTube logo draws itself with a short
 // synthesized chime while YouTube loads underneath. It is skipped with any
 // key, never blocks YouTube, and removes itself even if something fails.
 
@@ -33,18 +33,9 @@ const svg = (cls: string, body: string) =>
   `<div class="ctv-splash-part ${cls}"><svg viewBox="0 0 512 512" width="220" height="220" aria-hidden="true">${body}</svg></div>`;
 
 const MARK =
-  svg(
-    'ctv-splash-arc',
-    '<path d="M370.9 159.6A150 150 0 1 0 370.9 352.4" fill="none" stroke="#fff" stroke-width="44" stroke-linecap="round"/>'
-  ) +
-  svg(
-    'ctv-splash-play',
-    '<path d="M226 200v112l92-56z" fill="#fff" stroke="#fff" stroke-width="22" stroke-linejoin="round"/>'
-  ) +
-  svg(
-    'ctv-splash-spark',
-    '<path d="M404 222l9 25 25 9-25 9-9 25-9-25-25-9 25-9z" fill="#fff"/>'
-  );
+  svg('ctv-splash-arc', '') +
+  svg('ctv-splash-play', '<path d="M220 186v140l118-70z" fill="#fff"/>') +
+  svg('ctv-splash-spark', '');
 
 const EASE_OUT = 'cubic-bezier(.22,1,.36,1)';
 const EASE_BACK = 'cubic-bezier(.34,1.56,.64,1)';
@@ -54,23 +45,23 @@ const STYLE = `
   src:url(${SPLASH_FONT_URL}) format('woff2')}
 .ctv-splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483646;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:#0b0f14;background:radial-gradient(circle at 50% 45%,#13303a 0,#0b0f14 60%);
+  background:#ffffff;
   font-family:'${SPLASH_FONT_FAMILY}',Roboto,Arial,sans-serif;pointer-events:none;
   opacity:1;transition:opacity ${FADE_MS}ms ease-out;will-change:opacity}
 .ctv-splash-out{opacity:0}
 .ctv-splash-badge{position:relative;width:300px;height:300px;opacity:.01;
   will-change:transform,opacity}
-.ctv-splash-bg{position:absolute;top:0;left:0;width:100%;height:100%;
-  border-radius:72px;background:linear-gradient(135deg,#14b8a6,#4f46e5);
-  box-shadow:0 30px 80px rgba(20,184,166,.35)}
+.ctv-splash-bg{position:absolute;top:45px;left:0;width:100%;height:210px;
+  border-radius:60px;background:#ff0000;
+  box-shadow:0 24px 60px rgba(255,0,0,.25)}
 .ctv-splash-part{position:absolute;top:40px;left:40px;width:220px;height:220px;
   opacity:.01;will-change:transform,opacity}
 .ctv-splash-arc{transform:rotate(-140deg) scale(.7)}
-.ctv-splash-play{transform-origin:53.1% 50%;transform:scale(.3)}
+.ctv-splash-play{transform-origin:50% 50%;transform:scale(.3)}
 .ctv-splash-spark{transform-origin:78.9% 50%;transform:scale(.2) rotate(-90deg)}
-.ctv-splash-name{margin-top:44px;color:#f1f5f9;font-size:56px;font-weight:600;
+.ctv-splash-name{margin-top:44px;color:#0f0f0f;font-size:56px;font-weight:600;
   letter-spacing:1px;opacity:.01;transform:translateY(24px);will-change:transform,opacity}
-.ctv-splash-name span{color:#5eead4}
+.ctv-splash-name span{color:#ff0000}
 .ctv-splash-still .ctv-splash-badge,.ctv-splash-still .ctv-splash-part,
 .ctv-splash-still .ctv-splash-name{opacity:1;transform:none}
 .ctv-splash-run .ctv-splash-badge{animation:ctv-splash-badge .7s ${EASE_BACK} forwards}
@@ -265,7 +256,7 @@ export function showSplash(
   const splash = doc.createElement('div');
   splash.className = still ? 'ctv-splash ctv-splash-still' : 'ctv-splash';
   splash.innerHTML = `<div class="ctv-splash-badge"><div class="ctv-splash-bg"></div>${MARK}</div>
-    <div class="ctv-splash-name">ClearTube <span>TV</span></div>`;
+    <div class="ctv-splash-name">YouTube <span>Premium</span></div>`;
   root.appendChild(style);
   root.appendChild(splash);
 

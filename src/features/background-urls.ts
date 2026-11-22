@@ -1,6 +1,6 @@
 // Fixes background images whose address YouTube builds with the page's
 // protocol. Its player gives some image addresses (such as the thumbnails
-// shown while seeking) the protocol of the page, which in ClearTube TV is
+// shown while seeking) the protocol of the page, which in YouTube Premium is
 // file://, so they point to file://i.ytimg.com/... and never load.
 //
 // The style properties cannot be hooked on this browser (they are not on

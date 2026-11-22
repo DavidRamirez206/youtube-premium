@@ -1,5 +1,5 @@
-// "CT Options" entry in YouTube's side menu, right above YouTube's own
-// Settings, that opens the ClearTube TV settings menu. The entry is added
+// "More Options" entry in YouTube's side menu, right above YouTube's own
+// Settings, that opens the YouTube Premium settings menu. The entry is added
 // to the side menu (guide) API response.
 //
 // YouTube TV runs a side menu entry's command as soon as the entry gets
@@ -55,7 +55,7 @@ function guideSections(data: JsonObject): JsonObject[][] {
 }
 
 /**
- * Adds the "CT Options" entry above YouTube's Settings entry (or at the
+ * Adds the "More Options" entry above YouTube's Settings entry (or at the
  * end of the last section). Returns whether it was added.
  */
 export function addOptionsEntry(data: JsonObject): boolean {
@@ -82,13 +82,13 @@ export function openOptions() {
   try {
     window.ytaf_showOptionsPanel?.(true);
   } catch (error) {
-    reportError('CT Options', error);
+    reportError('More Options', error);
   }
 }
 
 const OK_KEYS = [13, 32];
 
-/** Whether the focused element is the "CT Options" entry. */
+/** Whether the focused element is the "More Options" entry. */
 export function optionsEntryFocused(doc: Document = document): boolean {
   const focused = doc.activeElement;
   return !!focused && focused.textContent?.trim() === t('guide.options');
@@ -112,7 +112,7 @@ export function installOptionsKey(target: Window = window) {
       evt.preventDefault();
       evt.stopImmediatePropagation();
     } catch (error) {
-      reportError('CT Options key', error);
+      reportError('More Options key', error);
     }
   };
   for (const type of ['keydown', 'keypress', 'keyup'] as const) {
@@ -127,4 +127,4 @@ ResolveCommandRegistry.getInstance()
     // Runs when the entry gets focus: do nothing.
     registry.setHook(OPTIONS_COMMAND, () => undefined);
   })
-  .catch((error: unknown) => reportError('CT Options', error));
+  .catch((error: unknown) => reportError('More Options', error));

@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Only the latest release of ClearTube TV receives security fixes. Please
+Only the latest release of YouTube Premium receives security fixes. Please
 update before reporting a problem.
 
 ## Reporting a vulnerability
@@ -10,7 +10,7 @@ update before reporting a problem.
 Do not open a public issue for security problems.
 
 Report vulnerabilities privately through
-[GitHub Security Advisories](https://github.com/DavidRamirez206/ClearTube-TV/security/advisories/new).
+[GitHub Security Advisories](https://github.com/DavidRamirez206/youtube-premium/security/advisories/new).
 Include:
 
 - the affected version and platform (Tizen or webOS, with OS version);
@@ -43,7 +43,7 @@ attestation. To verify a downloaded package:
 
 ```sh
 sha256sum --check --ignore-missing SHA256SUMS
-gh attestation verify ClearTubeTV_<version>_tizen_unsigned.wgt --repo DavidRamirez206/ClearTube-TV
+gh attestation verify YouTubePremium_<version>_tizen_unsigned.wgt --repo DavidRamirez206/youtube-premium
 ```
 
-Never install packages from other sources claiming to be ClearTube TV.
+Never install packages from other sources claiming to be YouTube Premium.

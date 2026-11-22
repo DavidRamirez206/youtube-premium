@@ -19,7 +19,7 @@ const SECTIONS = /** @type {const} */ ([
   ['style', 'Maintenance']
 ]);
 
-// Last upstream (TheMysticle/youtube-tizenos) commit before ClearTube TV.
+// Last upstream (TheMysticle/youtube-tizenos) commit before YouTube Premium.
 // The first release lists only the changes made after it.
 const FORK_BASE = '72268c87bfe7e014bdf23e59e2e64ebf61d8e72d';
 

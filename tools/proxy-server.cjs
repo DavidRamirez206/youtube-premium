@@ -124,7 +124,7 @@ const PORT = 3000;
 
 if (require.main === module) {
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`[ClearTube proxy] Listening on http://0.0.0.0:${PORT}`);
+    console.log(`[YouTube Premium proxy] Listening on http://0.0.0.0:${PORT}`);
   });
 }
 

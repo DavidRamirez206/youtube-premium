@@ -1,4 +1,4 @@
-// Translations for ClearTube TV's own interface (menu, notifications).
+// Translations for YouTube Premium's own interface (menu, notifications).
 // YouTube's interface follows the language of the YouTube account.
 
 import { configAddChangeListener, configRead } from './config.js';
@@ -7,7 +7,7 @@ export type Language = 'en' | 'es';
 type Dictionary = Record<string, string>;
 
 const en: Dictionary = {
-  'menu.title': 'ClearTube TV',
+  'menu.title': 'YouTube Premium',
   'menu.subtitle': 'Settings - version {version}',
   'menu.unsaved': '{count} unsaved changes',
   'menu.unsavedOne': '1 unsaved change',
@@ -41,16 +41,19 @@ const en: Dictionary = {
 
   'about.data':
     'Uses SponsorBlock and DeArrow data from sponsor.ajay.app, licensed under CC BY-NC-SA 4.0.',
+  'about.credits': 'Based on youtube-tizenos and youtube-webos.',
+  'about.font':
+    'Startup animation font: Roboto by Google, under the Apache License 2.0.',
   'about.license':
-    'Free software under the GPL-3.0. Not affiliated with YouTube or Google.',
-  'about.link': 'github.com/DavidRamirez206/ClearTube-TV',
+    'Unofficial free software under the GPL-3.0. Not affiliated with YouTube or Google.',
+  'about.link': 'github.com/DavidRamirez206/youtube-premium',
 
   'unsaved.title': 'You have unsaved changes',
   'unsaved.apply': 'Apply',
   'unsaved.discard': 'Discard',
   'unsaved.keep': 'Keep editing',
 
-  'notify.welcome': 'ClearTube TV: press GREEN for settings',
+  'notify.welcome': 'YouTube Premium: press GREEN for settings',
   'notify.applied': 'Settings applied',
   'notify.discarded': 'Changes discarded',
   'notify.audioOn': 'Audio-only mode on',
@@ -73,7 +76,7 @@ const en: Dictionary = {
   'segment.music_offtopic': 'non-music section',
   'segment.preview': 'recap or preview',
 
-  'guide.options': 'CT Options',
+  'guide.options': 'More Options',
 
   'choice.language.auto': 'Automatic',
   'choice.language.en': 'English',
@@ -81,7 +84,7 @@ const en: Dictionary = {
 };
 
 const es: Dictionary = {
-  'menu.title': 'ClearTube TV',
+  'menu.title': 'YouTube Premium',
   'menu.subtitle': 'Ajustes - versión {version}',
   'menu.unsaved': '{count} cambios sin guardar',
   'menu.unsavedOne': '1 cambio sin guardar',
@@ -115,16 +118,19 @@ const es: Dictionary = {
 
   'about.data':
     'Usa datos de SponsorBlock y DeArrow de sponsor.ajay.app, con licencia CC BY-NC-SA 4.0.',
+  'about.credits': 'Basado en youtube-tizenos y youtube-webos.',
+  'about.font':
+    'Fuente de la animación de inicio: Roboto de Google, con licencia Apache 2.0.',
   'about.license':
-    'Software libre bajo la GPL-3.0. Sin relación con YouTube ni Google.',
-  'about.link': 'github.com/DavidRamirez206/ClearTube-TV',
+    'Software libre no oficial bajo la GPL-3.0. Sin relación con YouTube ni Google.',
+  'about.link': 'github.com/DavidRamirez206/youtube-premium',
 
   'unsaved.title': 'Tienes cambios sin guardar',
   'unsaved.apply': 'Aplicar',
   'unsaved.discard': 'Descartar',
   'unsaved.keep': 'Seguir editando',
 
-  'notify.welcome': 'ClearTube TV: pulsa VERDE para los ajustes',
+  'notify.welcome': 'YouTube Premium: pulsa VERDE para los ajustes',
   'notify.applied': 'Ajustes aplicados',
   'notify.discarded': 'Cambios descartados',
   'notify.audioOn': 'Modo solo audio activado',
@@ -147,7 +153,7 @@ const es: Dictionary = {
   'segment.music_offtopic': 'parte sin música',
   'segment.preview': 'resumen o avance',
 
-  'guide.options': 'Opciones CT',
+  'guide.options': 'Más Opciones',
 
   'choice.language.auto': 'Automático',
   'choice.language.en': 'English',
@@ -199,7 +205,7 @@ const es: Dictionary = {
   'option.autoAccountSelect.desc': 'Saltar selección de cuenta',
   'option.autoAccountSelect.hint': 'Omite "¿Quién está viendo?" al iniciar',
   'option.language.desc': 'Idioma',
-  'option.language.hint': 'Idioma de los menús y avisos de ClearTube TV',
+  'option.language.hint': 'Idioma de los menús y avisos de YouTube Premium',
   'option.startupAnimation.desc': 'Animación de inicio',
   'option.startupAnimation.hint': 'Logo animado y sonido al abrir la app'
 };

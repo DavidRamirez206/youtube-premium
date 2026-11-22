@@ -24,11 +24,11 @@ describe('fault tolerance helpers', () => {
     expect(results).toEqual([false, false, true]);
     expect(order).toEqual(['working']);
     expect(console.error).toHaveBeenCalledWith(
-      '[ClearTube] broken failed to start:',
+      '[YouTube Premium] broken failed to start:',
       expect.stringContaining('boom')
     );
     expect(console.error).toHaveBeenCalledWith(
-      '[ClearTube] rejected failed to start:',
+      '[YouTube Premium] rejected failed to start:',
       expect.stringContaining('later')
     );
   });
@@ -41,7 +41,7 @@ describe('fault tolerance helpers', () => {
     expect(fn(2)).toBe(4);
     expect(fn(-1)).toBeUndefined();
     expect(console.error).toHaveBeenCalledWith(
-      '[ClearTube] listener failed:',
+      '[YouTube Premium] listener failed:',
       expect.stringContaining('negative')
     );
   });
@@ -56,11 +56,11 @@ describe('fault tolerance helpers', () => {
     Object.defineProperty(rejection, 'reason', { value: 'nope' });
     target.dispatchEvent(rejection);
     expect(console.error).toHaveBeenCalledWith(
-      '[ClearTube] uncaught error:',
+      '[YouTube Premium] uncaught error:',
       expect.stringContaining('uncaught')
     );
     expect(console.error).toHaveBeenCalledWith(
-      '[ClearTube] unhandled promise rejection:',
+      '[YouTube Premium] unhandled promise rejection:',
       'nope'
     );
   });

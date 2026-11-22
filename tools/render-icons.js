@@ -37,25 +37,12 @@ render(
   33
 );
 
-// 1920x1080 splash/background: dark canvas with the logo and the name.
+// 1920x1080 splash/background: white canvas with the logo and the name.
 const inner = mark.replace(/^<svg[^>]*>|<\/svg>\s*$/g, '');
 const background = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
-  <defs>
-    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.6">
-      <stop offset="0" stop-color="#16243a"/>
-      <stop offset="1" stop-color="#0b0f17"/>
-    </radialGradient>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#14b8a6"/>
-      <stop offset="1" stop-color="#4f46e5"/>
-    </linearGradient>
-  </defs>
-  <rect width="1920" height="1080" fill="url(#glow)"/>
-  <g transform="translate(840 330) scale(0.46875)">
-    <rect width="512" height="512" rx="116" fill="url(#bg)"/>
-    ${inner}
-  </g>
-  <text x="960" y="680" text-anchor="middle" font-family="Roboto, 'Noto Sans', 'DejaVu Sans', sans-serif" font-size="72" font-weight="700" fill="#ffffff">ClearTube TV</text>
+  <rect width="1920" height="1080" fill="#ffffff"/>
+  <g transform="translate(840 330) scale(0.46875)">${inner}</g>
+  <text x="960" y="680" text-anchor="middle" font-family="Roboto, 'Noto Sans', 'DejaVu Sans', sans-serif" font-size="72" font-weight="700" fill="#0f0f0f">YouTube <tspan fill="#ff0000">Premium</tspan></text>
 </svg>`;
 for (const name of [
   'splashBackground-v1.png',

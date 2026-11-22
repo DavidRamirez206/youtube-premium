@@ -73,7 +73,7 @@ class OnScreenConsole {
     window.addEventListener('keydown', onKey, true);
     window.addEventListener('keyup', onKey, true);
 
-    this.log('ClearTube TV debug console');
+    this.log('YouTube Premium debug console');
   }
 
   private record(label: string, args: readonly unknown[]) {

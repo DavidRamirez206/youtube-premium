@@ -252,7 +252,7 @@ const configOptions = new Map([
       default: 'auto',
       section: 'interface',
       desc: 'Language',
-      hint: 'Language of the ClearTube TV menus and messages',
+      hint: 'Language of the YouTube Premium menus and messages',
       choices: [
         { value: 'auto', label: 'Automatic' },
         { value: 'en', label: 'English' },

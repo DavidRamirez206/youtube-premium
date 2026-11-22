@@ -214,7 +214,7 @@ describe('settings menu', () => {
     row('hideLogo').querySelector('[data-role="value"]')!.remove();
     expect(() => menu.handleKey('down')).not.toThrow();
     expect(console.error).toHaveBeenCalledWith(
-      '[ClearTube] settings row hideLogo:',
+      '[YouTube Premium] settings row hideLogo:',
       expect.any(String)
     );
     menu.handleKey('up');

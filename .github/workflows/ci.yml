@@ -51,7 +51,7 @@ jobs:
       - name: Upload packages
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: cleartube-tv-${{ github.sha }}
+          name: youtube-premium-${{ github.sha }}
           path: |
             *.wgt
             *.ipk

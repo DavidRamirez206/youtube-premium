@@ -1,10 +1,10 @@
 name: Feature request
-description: Suggest a new feature or a change to how ClearTube TV or YouTube TV behaves.
+description: Suggest a new feature or a change to how YouTube Premium or YouTube TV behaves.
 labels: ['enhancement']
 body:
   - type: markdown
     attributes:
-      value: Please search the [existing issues](https://github.com/DavidRamirez206/ClearTube-TV/issues) first.
+      value: Please search the [existing issues](https://github.com/DavidRamirez206/youtube-premium/issues) first.
   - type: textarea
     id: problem
     attributes:

@@ -1,8 +1,8 @@
 # Disclaimer and terms of use
 
-By installing or using ClearTube TV you accept these terms.
+By installing or using YouTube Premium you accept these terms.
 
-1. **Unofficial software.** ClearTube TV is an independent, community-made
+1. **Unofficial software.** YouTube Premium is an independent, community-made
    project. It is **not** affiliated with, endorsed by or sponsored by
    Google LLC, YouTube, Samsung Electronics or LG Electronics. "YouTube" is
    a trademark of Google LLC and is used only to describe the service the
@@ -24,7 +24,7 @@ By installing or using ClearTube TV you accept these terms.
    developer mode on your TV and signing the package with your own
    certificate. Follow the manufacturer's instructions; you do this at your
    own risk.
-6. **Privacy.** ClearTube TV has no analytics and collects no personal data.
+6. **Privacy.** YouTube Premium has no analytics and collects no personal data.
    Besides YouTube, it only contacts the optional services you enable, and
    only with what they need:
    - [SponsorBlock](https://sponsor.ajay.app/) (`sponsor.ajay.app`, or the
@@ -34,10 +34,10 @@ By installing or using ClearTube TV you accept these terms.
      `dearrow-thumb.ajay.app`, when enabled): the first characters of a
      hash of each listed video ID, and the ID of each video whose
      community thumbnail is displayed.
-7. **Third-party data.** ClearTube TV uses SponsorBlock and DeArrow data
+7. **Third-party data.** YouTube Premium uses SponsorBlock and DeArrow data
    from https://sponsor.ajay.app/, licensed under
    [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
    That data is provided by its own project under its own terms and may not
-   be used commercially; ClearTube TV only displays it.
+   be used commercially; YouTube Premium only displays it.
 8. **Changes.** These terms may change with new releases. The version in
    the release you use applies.

@@ -1,8 +1,8 @@
 # Additional terms (GPL-3.0 section 7)
 
-ClearTube TV is licensed under the [GNU General Public License v3.0 only](LICENSE).
+YouTube Premium is licensed under the [GNU General Public License v3.0 only](LICENSE).
 As permitted by section 7 of that license, the following additional terms
-apply to the material added to this project by David Ramírez and ClearTube TV
+apply to the material added to this project by David Ramírez and YouTube Premium
 contributors (the "Authors"). Material inherited from youtube-webos and
 youtube-tizenos remains under the GPL-3.0 terms chosen by its authors.
 
@@ -26,13 +26,13 @@ Every copy and every modified version must keep, unaltered:
 - the [NOTICE](NOTICE) file, and
 - the "Credits" section of the README, or an equivalent notice reachable
   from the program's documentation, crediting youtube-webos,
-  youtube-tizenos and ClearTube TV.
+  youtube-tizenos and YouTube Premium.
 
 ## 7(c) Marking of modified versions
 
 Modified versions must be clearly marked as modified (for example, in their
 name, README and release notes) and must not be presented as the original
-ClearTube TV or as an official release by the Authors.
+YouTube Premium or as an official release by the Authors.
 
 ## 7(d) Publicity
 
@@ -42,9 +42,9 @@ prior written permission.
 
 ## 7(e) Trademarks
 
-The GPL-3.0 does not grant rights to use the "ClearTube TV" name or logo.
-Their use is governed by [TRADEMARKS.md](TRADEMARKS.md). Forks and modified
-versions must use a different name and logo.
+The GPL-3.0 does not grant any rights to the "YouTube" or "YouTube
+Premium" names or the YouTube logo, which are trademarks of Google LLC.
+See [TRADEMARKS.md](TRADEMARKS.md).
 
 ## 7(f) Indemnification
 

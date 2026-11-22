@@ -17,7 +17,7 @@ const fixture = () =>
 const titles = (items: Record<string, any>[]) =>
   items.map((i) => i.guideEntryRenderer.formattedTitle.simpleText);
 
-describe('CT Options side menu entry', () => {
+describe('More Options side menu entry', () => {
   it('goes right above YouTube Settings', () => {
     configWrite('language', 'en');
     const data = fixture();
@@ -26,7 +26,7 @@ describe('CT Options side menu entry', () => {
       titles(s.guideSectionRenderer.items).includes('Settings')
     )!;
     expect(titles(section.guideSectionRenderer.items).slice(0, 2)).toEqual([
-      'CT Options',
+      'More Options',
       'Settings'
     ]);
     expect(
@@ -40,7 +40,7 @@ describe('CT Options side menu entry', () => {
     addOptionsEntry(data);
     expect(addOptionsEntry(data)).toBe(false);
     const all = data.items.flatMap((s) => titles(s.guideSectionRenderer.items));
-    expect(all.filter((t) => t === 'CT Options')).toHaveLength(1);
+    expect(all.filter((t) => t === 'More Options')).toHaveLength(1);
   });
 
   it('falls back to the end of the last section', () => {
@@ -49,7 +49,7 @@ describe('CT Options side menu entry', () => {
     };
     addOptionsEntry(data);
     expect(titles(data.items[0]!.guideSectionRenderer.items)).toEqual([
-      'CT Options'
+      'More Options'
     ]);
   });
 
@@ -62,7 +62,7 @@ describe('CT Options side menu entry', () => {
     const data = fixture();
     addOptionsEntry(data);
     const all = data.items.flatMap((s) => titles(s.guideSectionRenderer.items));
-    expect(all).toContain('Opciones CT');
+    expect(all).toContain('Más Opciones');
     configWrite('language', 'auto');
   });
 
@@ -75,7 +75,7 @@ describe('CT Options side menu entry', () => {
     const all = response.items.flatMap((s) =>
       titles(s.guideSectionRenderer.items)
     );
-    expect(all.filter((t) => t === 'CT Options')).toHaveLength(1);
+    expect(all.filter((t) => t === 'More Options')).toHaveLength(1);
   });
 
   it('opens the menu only with OK on the focused entry', () => {
@@ -84,7 +84,7 @@ describe('CT Options side menu entry', () => {
     window.ytaf_showOptionsPanel = show;
     const entry = document.createElement('div');
     entry.tabIndex = 0;
-    entry.textContent = ' CT Options ';
+    entry.textContent = ' More Options ';
     const other = document.createElement('div');
     other.tabIndex = 0;
     other.textContent = 'Settings';
@@ -117,7 +117,7 @@ describe('CT Options side menu entry', () => {
     configWrite('language', 'auto');
   });
 
-  it('opens the ClearTube menu', () => {
+  it('opens the YouTube Premium menu', () => {
     const show = vi.fn();
     window.ytaf_showOptionsPanel = show;
     openOptions();
