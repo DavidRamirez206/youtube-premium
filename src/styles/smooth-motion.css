@@ -1,0 +1,22 @@
+/*
+ * Smoother movement on the TV. Only transform is transitioned: the TV's
+ * compositor animates it without layout or repaint. Selectors use YouTube's
+ * element names, which stay the same across versions, not its generated
+ * class names.
+ */
+
+/* The focused tile grows smoothly instead of jumping to its new size. */
+ytlr-tile-header-renderer {
+  transition: transform 160ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/*
+ * Progress bar: the circle, the filled parts and the seek preview glide
+ * between positions instead of jumping. YouTube moves them in steps, about
+ * every 250 ms while playing and once per key press while seeking.
+ */
+ytlr-progress-bar ytlr-playhead,
+ytlr-progress-bar ytlr-storyboard,
+ytlr-progress-bar [style*='scaleX'] {
+  transition: transform 250ms linear;
+}

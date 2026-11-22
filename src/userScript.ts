@@ -48,6 +48,7 @@ import './hooks';
 import './hooks/json-parse';
 import './styles/font-fix.css';
 import './styles/yt-fixes.css';
+import './styles/smooth-motion.css';
 
 // Each feature loads in isolation: if one fails, it is reported in the
 // debug console (Red button) and the others keep working. "eager" keeps
