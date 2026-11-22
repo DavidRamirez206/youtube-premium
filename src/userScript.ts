@@ -63,6 +63,10 @@ const features: [string, () => Promise<unknown>][] = [
     'watch-history',
     () => import(/* webpackMode: "eager" */ './features/watch-history')
   ],
+  [
+    'background-urls',
+    () => import(/* webpackMode: "eager" */ './features/background-urls')
+  ],
   ['shorts', () => import(/* webpackMode: "eager" */ './features/shorts')],
   ['dearrow', () => import(/* webpackMode: "eager" */ './features/dearrow')],
   [
