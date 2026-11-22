@@ -11,41 +11,59 @@ export const SPLASH_MS = 2600;
 export const SPLASH_MAX_MS = 7000;
 const FADE_MS = 400;
 
-const MARK = `
-<svg class="ctv-splash-mark" viewBox="0 0 512 512" width="220" height="220" aria-hidden="true">
-  <path class="ctv-splash-arc" d="M370.9 159.6A150 150 0 1 0 370.9 352.4" fill="none" stroke="#fff" stroke-width="44" stroke-linecap="round"/>
-  <path class="ctv-splash-play" d="M226 200v112l92-56z" fill="#fff" stroke="#fff" stroke-width="22" stroke-linejoin="round"/>
-  <path class="ctv-splash-spark" d="M404 222l9 25 25 9-25 9-9 25-9-25-25-9 25-9z" fill="#fff"/>
-</svg>`;
+// Each part of the mark is its own layer and only transform and opacity
+// are animated: the TV's compositor keeps those running smoothly while the
+// main thread is busy parsing YouTube's scripts.
+const svg = (cls: string, body: string) =>
+  `<div class="ctv-splash-part ${cls}"><svg viewBox="0 0 512 512" width="220" height="220" aria-hidden="true">${body}</svg></div>`;
+
+const MARK =
+  svg(
+    'ctv-splash-arc',
+    '<path d="M370.9 159.6A150 150 0 1 0 370.9 352.4" fill="none" stroke="#fff" stroke-width="44" stroke-linecap="round"/>'
+  ) +
+  svg(
+    'ctv-splash-play',
+    '<path d="M226 200v112l92-56z" fill="#fff" stroke="#fff" stroke-width="22" stroke-linejoin="round"/>'
+  ) +
+  svg(
+    'ctv-splash-spark',
+    '<path d="M404 222l9 25 25 9-25 9-9 25-9-25-25-9 25-9z" fill="#fff"/>'
+  );
+
+const EASE_OUT = 'cubic-bezier(.22,1,.36,1)';
+const EASE_BACK = 'cubic-bezier(.34,1.56,.64,1)';
 
 const STYLE = `
 .ctv-splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483646;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:#0b0f14;background:radial-gradient(circle at 50% 45%,#13303a 0,#0b0f14 60%);
   font-family:'YouTube Noto',Roboto,Arial,sans-serif;pointer-events:none;
-  opacity:1;transition:opacity ${FADE_MS}ms ease-out}
+  opacity:1;transition:opacity ${FADE_MS}ms ease-out;will-change:opacity}
 .ctv-splash-out{opacity:0}
-.ctv-splash-badge{width:300px;height:300px;border-radius:72px;display:flex;
-  align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#14b8a6,#4f46e5);
-  box-shadow:0 30px 80px rgba(20,184,166,.35);opacity:0}
-.ctv-splash-run .ctv-splash-badge{animation:ctv-splash-badge .7s cubic-bezier(.2,1.4,.4,1) both}
-.ctv-splash-arc{stroke-dasharray:760;stroke-dashoffset:760}
-.ctv-splash-run .ctv-splash-arc{animation:ctv-splash-draw .8s .35s ease-out forwards}
-.ctv-splash-play{transform-origin:272px 256px;transform:scale(0)}
-.ctv-splash-run .ctv-splash-play{animation:ctv-splash-pop .35s 1s cubic-bezier(.2,1.6,.4,1) forwards}
-.ctv-splash-spark{transform-origin:404px 256px;opacity:0}
-.ctv-splash-run .ctv-splash-spark{animation:ctv-splash-spark .6s 1.3s ease-out forwards}
+.ctv-splash-badge{position:relative;width:300px;height:300px;opacity:0;
+  will-change:transform,opacity}
+.ctv-splash-bg{position:absolute;top:0;left:0;width:100%;height:100%;
+  border-radius:72px;background:linear-gradient(135deg,#14b8a6,#4f46e5);
+  box-shadow:0 30px 80px rgba(20,184,166,.35)}
+.ctv-splash-part{position:absolute;top:40px;left:40px;width:220px;height:220px;
+  opacity:0;will-change:transform,opacity}
+.ctv-splash-arc{transform:rotate(-140deg) scale(.7)}
+.ctv-splash-play{transform-origin:53.1% 50%;transform:scale(0)}
+.ctv-splash-spark{transform-origin:78.9% 50%;transform:scale(.2) rotate(-90deg)}
 .ctv-splash-name{margin-top:44px;color:#f1f5f9;font-size:56px;font-weight:600;
-  letter-spacing:1px;opacity:0}
-.ctv-splash-run .ctv-splash-name{animation:ctv-splash-rise .5s 1.45s ease-out forwards}
+  letter-spacing:1px;opacity:0;transform:translateY(24px);will-change:transform,opacity}
 .ctv-splash-name span{color:#5eead4}
+.ctv-splash-run .ctv-splash-badge{animation:ctv-splash-badge .7s ${EASE_BACK} forwards}
+.ctv-splash-run .ctv-splash-arc{animation:ctv-splash-arc .8s .3s ${EASE_OUT} forwards}
+.ctv-splash-run .ctv-splash-play{animation:ctv-splash-pop .45s .85s ${EASE_BACK} forwards}
+.ctv-splash-run .ctv-splash-spark{animation:ctv-splash-spark .6s 1.15s ${EASE_OUT} forwards}
+.ctv-splash-run .ctv-splash-name{animation:ctv-splash-rise .6s 1.3s ${EASE_OUT} forwards}
 @keyframes ctv-splash-badge{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
-@keyframes ctv-splash-draw{to{stroke-dashoffset:0}}
-@keyframes ctv-splash-pop{to{transform:scale(1)}}
-@keyframes ctv-splash-spark{0%{opacity:0;transform:scale(.2) rotate(-45deg)}
-  60%{opacity:1;transform:scale(1.3) rotate(10deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
-@keyframes ctv-splash-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ctv-splash-arc{to{transform:rotate(0) scale(1);opacity:1}}
+@keyframes ctv-splash-pop{to{transform:scale(1);opacity:1}}
+@keyframes ctv-splash-spark{to{transform:scale(1) rotate(0);opacity:1}}
+@keyframes ctv-splash-rise{to{transform:translateY(0);opacity:1}}
 `;
 
 type AudioCtor = new () => AudioContext;
@@ -114,7 +132,7 @@ export function showSplash(
   style.textContent = STYLE;
   const splash = doc.createElement('div');
   splash.className = 'ctv-splash';
-  splash.innerHTML = `<div class="ctv-splash-badge">${MARK}</div>
+  splash.innerHTML = `<div class="ctv-splash-badge"><div class="ctv-splash-bg"></div>${MARK}</div>
     <div class="ctv-splash-name">ClearTube <span>TV</span></div>`;
   root.appendChild(style);
   root.appendChild(splash);
