@@ -4,8 +4,10 @@ import './polyfills/domrect-polyfill';
 
 import { handleLaunch } from './core/utils';
 import { installGlobalErrorHandlers, startFeature } from './core/safe';
+import { startSplash } from './ui/splash';
 
 installGlobalErrorHandlers();
+startSplash();
 
 document.addEventListener(
   'webOSRelaunch',

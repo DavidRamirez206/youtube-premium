@@ -238,6 +238,15 @@ const configOptions = new Map([
     }
   ],
   [
+    'startupAnimation',
+    {
+      default: true,
+      section: 'interface',
+      desc: 'Startup animation',
+      hint: 'Animated logo and sound when the app opens'
+    }
+  ],
+  [
     'language',
     {
       default: 'auto',
