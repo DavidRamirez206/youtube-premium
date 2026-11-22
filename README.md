@@ -47,22 +47,25 @@ usual. No video content is hosted, copied or redistributed by this project.
 
 ## Features
 
-| Feature                                   | Description                                                                                        |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Ad blocking                               | Removes video ads, home page banners and sponsored tiles.                                          |
-| [SponsorBlock](https://sponsor.ajay.app/) | Skips sponsored segments, interaction reminders and self-promotion. Other categories are optional. |
-| Maximum video quality                     | Selects the highest resolution available for each video.                                           |
-| High-quality thumbnails                   | Replaces low-resolution thumbnails with higher-quality versions.                                   |
-| End screen removal                        | Hides the end-of-video cards that cover the last seconds.                                          |
-| [DeArrow](https://dearrow.ajay.app/)      | Replaces clickbait titles and thumbnails with community-submitted ones (optional).                 |
-| Playback speed                            | Starts every video at a chosen speed, from 0.75x to 2x.                                            |
-| Hide Shorts                               | Removes Shorts from home, subscriptions, search and the side menu (optional).                      |
-| Disable previews                          | Stops videos from playing automatically when a tile is focused (optional).                         |
-| Audio-only mode                           | Hides the picture and keeps the audio playing (Blue button).                                       |
-| On-screen clock                           | Shows the current time over the interface (optional).                                              |
-| Logo removal                              | Hides the YouTube logo from the interface (optional).                                              |
-| Account selector bypass                   | Skips the "Who's watching?" screen on start-up (optional).                                         |
-| Settings menu                             | Every option, grouped by section, can be changed from the remote with the Green button.            |
+| Feature                                   | Description                                                                                            |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Ad blocking                               | Removes video ads, home page banners and sponsored tiles.                                              |
+| [SponsorBlock](https://sponsor.ajay.app/) | Skips sponsored segments, interaction reminders and self-promotion. Other categories are optional.     |
+| Maximum video quality                     | Selects the highest resolution available for each video.                                               |
+| High-quality thumbnails                   | Replaces low-resolution thumbnails with higher-quality versions.                                       |
+| End screen removal                        | Hides the end-of-video cards that cover the last seconds.                                              |
+| [DeArrow](https://dearrow.ajay.app/)      | Replaces clickbait titles and thumbnails with community-submitted ones (optional).                     |
+| Playback speed                            | Starts every video at a chosen speed, from 0.75x to 2x.                                                |
+| Watch history                             | Videos watched with ads blocked are still saved to the YouTube history.                                |
+| Hide Shorts                               | Removes Shorts from home, subscriptions, search and the side menu (optional).                          |
+| Disable previews                          | Stops videos from playing automatically when a tile is focused (optional).                             |
+| Audio-only mode                           | Hides the picture and keeps the audio playing (Blue button).                                           |
+| On-screen clock                           | Shows the current time over the interface (optional).                                                  |
+| Logo removal                              | Hides the YouTube logo from the interface (optional).                                                  |
+| Account selector bypass                   | Skips the "Who's watching?" screen on start-up (optional).                                             |
+| Settings menu                             | Opened with the Green button or "CT Options" in YouTube's side menu. Changes apply without restarting. |
+| Languages                                 | The ClearTube TV menu and messages are available in English and Spanish.                               |
+| Startup animation                         | Animated logo and a short sound when the application opens (optional).                                 |
 
 ## Compatibility
 
@@ -158,42 +161,61 @@ previous version.
 | Up / Down  | Move through the settings menu.                                 |
 | OK         | Toggle the selected option or cycle through its values.         |
 | Left/Right | Change the value of options such as playback speed.             |
-| Back       | Close the settings menu.                                        |
+| Back       | Close the settings menu, or the unsaved changes bar.            |
 | Blue       | Toggle audio-only mode while a video is playing.                |
 | Red        | Show or hide the on-screen debug console.                       |
 | Yellow     | Show or hide the interface element inspector (for development). |
 
 ## Settings
 
-The menu groups the options in four sections. Options marked with an
-asterisk are applied immediately; the others are applied when the menu
-closes, which reloads the application.
+The menu can be opened with the Green button or from the "CT Options"
+entry in YouTube's side menu, right above YouTube's own Settings.
 
-| Section          | Option                               | Default |
-| ---------------- | ------------------------------------ | ------- |
-| Ads and sponsors | Block ads                            | On      |
-|                  | SponsorBlock                         | On      |
-|                  | Skip sponsor segments                | On      |
-|                  | Skip interaction reminders           | On      |
-|                  | Skip self-promotion                  | On      |
-|                  | Skip intros                          | Off     |
-|                  | Skip outros and credits              | Off     |
-|                  | Skip non-music parts of music videos | Off     |
-|                  | Skip recaps and previews             | Off     |
-| Playback         | Maximum video quality                | On      |
-|                  | Default playback speed \*            | 1x      |
-|                  | Remove end screens                   | On      |
-|                  | Disable autoplay previews            | Off     |
-| Content          | Hide Shorts                          | Off     |
-|                  | DeArrow                              | Off     |
-|                  | Use DeArrow thumbnails               | On      |
-|                  | High-quality thumbnails \*           | On      |
-| Interface        | Hide the YouTube logo \*             | Off     |
-|                  | Show clock \*                        | Off     |
-|                  | Skip account selection               | Off     |
+Changes are collected while the menu is open and applied together with
+"Apply changes", without restarting the application or stopping the video
+being played. Closing the menu with unsaved changes shows a bar to apply
+them, discard them or keep editing. "Restore defaults" sets every option
+back to its default value, which is also applied with "Apply changes".
+
+| Section          | Option                               | Default   |
+| ---------------- | ------------------------------------ | --------- |
+| Ads and sponsors | Block ads                            | On        |
+|                  | SponsorBlock                         | On        |
+|                  | Skip sponsor segments                | On        |
+|                  | Skip interaction reminders           | On        |
+|                  | Skip self-promotion                  | On        |
+|                  | Skip intros                          | Off       |
+|                  | Skip outros and credits              | Off       |
+|                  | Skip non-music parts of music videos | Off       |
+|                  | Skip recaps and previews             | Off       |
+| Playback         | Maximum video quality                | On        |
+|                  | Default playback speed               | 1x        |
+|                  | Remove end screens                   | On        |
+|                  | Save watch history                   | On        |
+|                  | Disable autoplay previews            | Off       |
+| Content          | Hide Shorts                          | Off       |
+|                  | DeArrow                              | Off       |
+|                  | Use DeArrow thumbnails               | On        |
+|                  | High-quality thumbnails              | On        |
+| Interface        | Hide the YouTube logo                | Off       |
+|                  | Show clock                           | Off       |
+|                  | Skip account selection               | Off       |
+|                  | Startup animation                    | On        |
+|                  | Language                             | Automatic |
 
 The SponsorBlock categories only apply while SponsorBlock is on, and the
-DeArrow thumbnails option only while DeArrow is on.
+DeArrow thumbnails option only while DeArrow is on; the menu shows them as
+off until their parent option is turned on. Shorts are shown unless "Hide
+Shorts" is turned on.
+
+"Save watch history" matters only while ads are blocked: to avoid
+YouTube's anti-ad-blocking slowdowns, player requests are marked as
+preview playback, which YouTube leaves out of the history. With the option
+on, videos played from the watch page are not marked.
+
+"Language" sets the language of ClearTube TV's own menu and messages.
+"Automatic" follows the language of the television. YouTube's interface
+follows the language of the YouTube account.
 
 Settings are stored on the television only.
 
@@ -229,7 +251,8 @@ See [DISCLAIMER.md](DISCLAIMER.md) for details.
 
 ## Known issues
 
-- Preview thumbnails on the progress bar may render black while seeking.
+- Preview thumbnails on the progress bar may render black while seeking
+  (a fix is included but not yet confirmed on every television).
 
 Report problems through the
 [issue tracker](https://github.com/DavidRamirez206/ClearTube-TV/issues).
