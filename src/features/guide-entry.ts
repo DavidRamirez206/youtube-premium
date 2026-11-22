@@ -23,7 +23,7 @@ export function optionsEntry() {
   return {
     guideEntryRenderer: {
       navigationEndpoint: { [OPTIONS_COMMAND]: {} },
-      icon: { iconType: 'TUNE' },
+      icon: { iconType: 'MENU_FILTER' },
       formattedTitle: { simpleText: t('guide.options') },
       trackingParams: ''
     }
